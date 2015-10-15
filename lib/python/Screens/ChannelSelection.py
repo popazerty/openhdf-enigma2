@@ -132,11 +132,15 @@ class ChannelContextMenu(Screen):
 		self.csel = csel
 		self.bsel = None
 
-		self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "NumberActions"],
+		self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "NumberActions", "MenuActions"],
 			{
 				"ok": self.okbuttonClick,
 				"cancel": self.cancelClick,
-				"blue": self.showServiceInPiP
+				"red": self.removeCurrentService,
+				"green": self.renameEntry,
+				"yellow": self.toggleMoveMode,
+				"blue": self.showServiceInPiP,
+				"0": self.reloadServices
 			})
 		menu = [ ]
 
@@ -200,21 +204,21 @@ class ChannelContextMenu(Screen):
 					if ("flags == %d" % FLAG_SERVICE_NEW_FOUND) in current_sel_path:
 						append_when_current_valid(current, menu, (_("remove all new found flags"), self.removeAllNewFoundFlags), level = 0)
 				if inBouquet:
-					append_when_current_valid(current, menu, (_("rename entry"), self.renameEntry), level = 0)
+					append_when_current_valid(current, menu, (_("rename entry"), self.renameEntry), level = 0, key="green")
 					if not inAlternativeList:
-						append_when_current_valid(current, menu, (_("remove entry"), self.removeCurrentService), level = 0)
+						append_when_current_valid(current, menu, (_("remove entry"), self.removeCurrentService), level = 0, key="red")
 				if current_root and ("flags == %d" % FLAG_SERVICE_NEW_FOUND) in current_root.getPath():
 					append_when_current_valid(current, menu, (_("remove new found flag"), self.removeNewFoundFlag), level = 0)
 			else:
 				menu.append(ChoiceEntryComponent(text = (_("add bouquet"), self.showBouquetInputBox)))
-				append_when_current_valid(current, menu, (_("rename entry"), self.renameEntry), level = 0)
+				append_when_current_valid(current, menu, (_("rename entry"), self.renameEntry), level = 0, key="green")
 				append_when_current_valid(current, menu, (_("remove entry"), self.removeBouquet), level = 0)
 
 
 		if inBouquet: # current list is editable?
 			if csel.bouquet_mark_edit == OFF:
 				if not csel.movemode:
-					append_when_current_valid(current, menu, (_("enable move mode"), self.toggleMoveMode), level = 1)
+					append_when_current_valid(current, menu, (_("enable move mode"), self.toggleMoveMode), level = 1, key = "yellow")
 					if not inBouquetRootList and current_root and not (current_root.flags & eServiceReference.isGroup):
 						if current.type != -1:
 							menu.append(ChoiceEntryComponent(text = (_("add marker"), self.showMarkerInputBox)))
@@ -229,7 +233,7 @@ class ChannelContextMenu(Screen):
 						elif not current_sel_flags & eServiceReference.isMarker:
 							append_when_current_valid(current, menu, (_("add alternatives"), self.addAlternativeServices), level = 2)
 				else:
-					append_when_current_valid(current, menu, (_("disable move mode"), self.toggleMoveMode), level = 0)
+					append_when_current_valid(current, menu, (_("disable move mode"), self.toggleMoveMode), level = 0, key = "yellow")
 			else:
 				if csel.bouquet_mark_edit == EDIT_BOUQUET:
 					if haveBouquets:
@@ -239,13 +243,13 @@ class ChannelContextMenu(Screen):
 						append_when_current_valid(current, menu, (_("end favourites edit"), self.bouquetMarkEnd), level = 0)
 						append_when_current_valid(current, menu, (_("abort favourites edit"), self.bouquetMarkAbort), level = 0)
 					if current_sel_flags & eServiceReference.isMarker:	
-						append_when_current_valid(current, menu, (_("rename entry"), self.renameEntry), level = 0)
-						append_when_current_valid(current, menu, (_("remove entry"), self.removeCurrentService), level = 0)
+						append_when_current_valid(current, menu, (_("rename entry"), self.renameEntry), level = 0, key="green")
+						append_when_current_valid(current, menu, (_("remove entry"), self.removeCurrentService), level = 0, key="red")
 				else:
 					append_when_current_valid(current, menu, (_("end alternatives edit"), self.bouquetMarkEnd), level = 0)
 					append_when_current_valid(current, menu, (_("abort alternatives edit"), self.bouquetMarkAbort), level = 0)
 
-		menu.append(ChoiceEntryComponent(text = (_("Reload Services"), self.reloadServices)))
+		menu.append(ChoiceEntryComponent(text = (_("Reload Services"), self.reloadServices), key="0"))
 
 		self["menu"] = ChoiceList(menu)
 
@@ -265,6 +269,16 @@ class ChannelContextMenu(Screen):
 
 	def cancelClick(self):
 		self.close(False)
+
+	def removeEntry(self):
+		if self.removeFunction and self.csel.servicelist.getCurrent() and self.csel.servicelist.getCurrent().valid():
+			if self.csel.confirmRemove:
+				list = [(_("yes"), True), (_("no"), False), (_("yes") + " " + _("and never ask again this session again"), "never")]
+				self.session.openWithCallback(self.removeFunction, MessageBox, _("Are you sure to remove this entry?") + "\n%s" % self.getCurrentSelectionName(), list=list)
+			else:
+				self.removeFunction(True)
+		else:
+			return 0
 
 	def reloadServices(self):
 		eDVBDB.getInstance().reloadBouquets()
@@ -2173,6 +2187,10 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 			tmp_mode = config.servicelist.lastmode.value
 			tmp_root = self.getRoot()
 			tmp_ref = self.getCurrentSelection()
+			pip_ref = self.session.pip.getCurrentService()
+			if tmp_ref and pip_ref and tmp_ref != pip_ref:
+				self.revertMode = None
+				return
 			if self.mainScreenMode == "tv":
 				self.setModeTv()
 			elif self.mainScreenMode == "radio":
@@ -2185,16 +2203,24 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 			oldref = self.session.nav.currentlyPlayingServiceReference
 			if oldref and selected_ref == oldref or (oldref != current_ref and selected_ref == current_ref):
 				self.session.nav.currentlyPlayingServiceOrGroup = selected_ref
+				self.session.nav.pnav.navEvent(iPlayableService.evStart)
 		if self.dopipzap:
 			if tmp_mode == "tv":
 				self.setModeTv()
 			elif tmp_mode == "radio":
 				self.setModeRadio()
 			self.enterUserbouquet(tmp_root)
-			pip_ref = self.session.pip.getCurrentService()
+			title = self.instance.getTitle()
+			pos = title.find(" (")
+			if pos != -1:
+				title = title[:pos]
+				title += _(" (PiP)")
+				self.setTitle(title)
+				self.buildTitleString()
 			if tmp_ref and pip_ref and tmp_ref.getChannelNum() != pip_ref.getChannelNum():
 				self.session.pip.currentService = tmp_ref
 			self.setCurrentSelection(tmp_ref)
+		self.revertMode = None
 
 class PiPZapSelection(ChannelSelection):
 	def __init__(self, session):
@@ -2274,7 +2300,7 @@ class RadioInfoBar(Screen):
 		Screen.__init__(self, session)
 		self['RdsDecoder'] = RdsDecoder(self.session.nav)
 
-class ChannelSelectionRadio(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelectionEPG, InfoBarBase):
+class ChannelSelectionRadio(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelectionEPG, InfoBarBase, SelectionEventInfo):
 	ALLOW_SUSPEND = True
 
 	def __init__(self, session, infobar):
@@ -2282,6 +2308,7 @@ class ChannelSelectionRadio(ChannelSelectionBase, ChannelSelectionEdit, ChannelS
 		ChannelSelectionEdit.__init__(self)
 		ChannelSelectionEPG.__init__(self)
 		InfoBarBase.__init__(self)
+		SelectionEventInfo.__init__(self)
 		self.infobar = infobar
 		self.startServiceRef = None
 		self.onLayoutFinish.append(self.onCreate)
@@ -2313,9 +2340,14 @@ class ChannelSelectionRadio(ChannelSelectionBase, ChannelSelectionEdit, ChannelS
 		self["RdsActions"].setEnabled(False)
 		infobar.rds_display.onRassInteractivePossibilityChanged.append(self.RassInteractivePossibilityChanged)
 		self.onClose.append(self.__onClose)
+		self.onExecBegin.append(self.__onExecBegin)
+		self.onExecEnd.append(self.__onExecEnd)
 
 	def __onClose(self):
-		lastservice = eServiceReference(config.tv.lastservice.value)
+		del self.info["RdsDecoder"]
+		self.session.deleteDialog(self.info)
+		self.infobar.rds_display.onRassInteractivePossibilityChanged.remove(self.RassInteractivePossibilityChanged)
+		lastservice=eServiceReference(config.tv.lastservice.value)
 		self.session.nav.playService(lastservice)
 
 	def startRassInteractive(self):
@@ -2330,8 +2362,13 @@ class ChannelSelectionRadio(ChannelSelectionBase, ChannelSelectionEdit, ChannelS
 	def RassInteractivePossibilityChanged(self, state):
 		self['RdsActions'].setEnabled(state)
 
+	def __onExecBegin(self):
+		self.info.show()
+
+	def __onExecEnd(self):
+		self.info.hide()
+
 	def cancel(self):
-		self.infobar.rds_display.onRassInteractivePossibilityChanged.remove(self.RassInteractivePossibilityChanged)
 		self.info.hide()
 		self.close(None)
 

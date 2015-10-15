@@ -203,15 +203,30 @@ def InitUsageConfig():
 
 	config.usage.window_timeout = ConfigSelectionNumber(default = 180, stepwidth = 1, min = 1, max = 600, wraparound = True)
 
+	choicelist = [("standby", _("Standby")),("deepstandby", _("Deep Standby"))]
+	config.usage.sleep_timer_action = ConfigSelection(default = "deepstandby", choices = choicelist)
+	choicelist = [("0", _("Disabled")),("event_standby", _("Execute after current event"))]
+	for i in range(900, 7201, 900):
+		m = abs(i / 60)
+		m = ngettext("%d minute", "%d minutes", m) % m
+		choicelist.append((str(i), _("Execute in ") + m))
+	config.usage.sleep_timer = ConfigSelection(default = "0", choices = choicelist)
+
 	config.usage.on_long_powerpress = ConfigSelection(default = "show_menu", choices = [
 		("show_menu", _("Show shutdown menu")),
 		("shutdown", _("Immediate shutdown")),
-		("standby", _("Standby")) ] )
+		("standby", _("Standby")),
+		("sleeptimer", _("Sleep Timer")),
+		("powertimerStandby", _("Powertimer Standby")),
+		("powertimerDeepStandby", _("Powertimer DeepStandby")) ] )
 
 	config.usage.on_short_powerpress = ConfigSelection(default = "standby", choices = [
 		("show_menu", _("Show shutdown menu")),
 		("shutdown", _("Immediate shutdown")),
-		("standby", _("Standby")) ] )
+		("standby", _("Standby")),
+		("sleeptimer", _("Sleep Timer")),
+		("powertimerStandby", _("Powertimer Standby")),
+		("powertimerDeepStandby", _("Powertimer DeepStandby")) ] )
 
 	choicelist = [("0", "Disabled")]
 	for i in (5, 30, 60, 300, 600, 900, 1200, 1800, 2700, 3600):
@@ -237,13 +252,35 @@ def InitUsageConfig():
 	config.usage.remote_fallback_enabled = ConfigYesNo(default = False);
 	config.usage.remote_fallback = ConfigText(default = "", fixed_size = False);
 
+	dvbs_nims = [("-2", _("Disabled"))]
+	dvbt_nims = [("-2", _("Disabled"))]
+	dvbc_nims = [("-2", _("Disabled"))]
 	nims = [("-1", _("auto"))]
 	rec_nims = [("-2", _("Disabled")), ("-1", _("auto"))]
 	for x in nimmanager.nim_slots:
+		if x.isCompatible("DVB-S"):
+			dvbs_nims.append((str(x.slot), x.getSlotName()))
+		elif x.isCompatible("DVB-T"):
+			dvbt_nims.append((str(x.slot), x.getSlotName()))
+		elif x.isCompatible("DVB-C"):
+			dvbc_nims.append((str(x.slot), x.getSlotName()))
 		nims.append((str(x.slot), x.getSlotName()))
-		rec_nims.append((str(x.slot), x.getSlotName()))
-	config.usage.frontend_priority = ConfigSelection(default = "-1", choices = nims)
-	config.usage.recording_frontend_priority = ConfigSelection(default = "-2", choices = rec_nims)
+	config.usage.frontend_priority = ConfigSelection(default = "-1", choices = list(nims))
+	nims.insert(0,("-2", _("Disabled")))
+	config.usage.recording_frontend_priority = ConfigSelection(default = "-2", choices = nims)
+	config.usage.frontend_priority_dvbs = ConfigSelection(default = "-2", choices = list(dvbs_nims))
+	dvbs_nims.insert(1,("-1", _("auto")))
+	config.usage.recording_frontend_priority_dvbs = ConfigSelection(default = "-2", choices = dvbs_nims)
+	config.usage.frontend_priority_dvbt = ConfigSelection(default = "-2", choices = list(dvbt_nims))
+	dvbt_nims.insert(1,("-1", _("auto")))
+	config.usage.recording_frontend_priority_dvbt = ConfigSelection(default = "-2", choices = dvbt_nims)
+	config.usage.frontend_priority_dvbc = ConfigSelection(default = "-2", choices = list(dvbc_nims))
+	dvbc_nims.insert(1,("-1", _("auto")))
+	config.usage.recording_frontend_priority_dvbc = ConfigSelection(default = "-2", choices = dvbc_nims)
+	SystemInfo["DVB-S_priority_tuner_available"] = len(dvbs_nims) > 3 and (len(dvbt_nims) > 2 or len(dvbc_nims) > 2)
+	SystemInfo["DVB-T_priority_tuner_available"] = len(dvbt_nims) > 3 and (len(dvbs_nims) > 2 or len(dvbc_nims) > 2)
+	SystemInfo["DVB-C_priority_tuner_available"] = len(dvbc_nims) > 3 and (len(dvbs_nims) > 2 or len(dvbt_nims) > 2)
+
 	config.misc.disable_background_scan = ConfigYesNo(default = False)
 
 	config.usage.jobtaksextensions = ConfigYesNo(default = True)
@@ -352,7 +389,8 @@ def InitUsageConfig():
 	config.usage.show_cryptoinfo = ConfigSelection([("0", _("Off")),("1", _("One line")),("2", _("Two lines"))], "2")
 	config.usage.show_eit_nownext = ConfigYesNo(default = True)
 	config.usage.show_vcr_scart = ConfigYesNo(default = False)
-
+	config.usage.pic_resolution = ConfigSelection(default = None, choices = [(None, _("Same resolution as skin")), ("(720, 576)","720x576"), ("(1280, 720)", "1280x720"), ("(1920, 1080)", "1920x1080")])
+	
 	config.epg = ConfigSubsection()
 	config.epg.eit = ConfigYesNo(default = True)
 	config.epg.mhw = ConfigYesNo(default = False)
@@ -1279,6 +1317,24 @@ def InitUsageConfig():
 	config.pluginbrowser = ConfigSubsection()
 	config.pluginbrowser.po = ConfigYesNo(default = False)
 	config.pluginbrowser.src = ConfigYesNo(default = False)
+
+	settingsoverlanchoices = [('/etc/enigma2/', 'Default')]
+	for p in harddiskmanager.getMountedPartitions():
+		if os.path.exists(p.mountpoint):
+			d = os.path.normpath(p.mountpoint)
+			if p.mountpoint != '/':
+				settingsoverlanchoices.append((p.mountpoint, d))
+	config.usage.settingsoverlan_enable = ConfigYesNo(default = False)
+	config.usage.settingsoverlan_path = ConfigSelection(default = '/etc/enigma2/', choices = settingsoverlanchoices)
+	config.usage.settingsoverlan_bouquet = ConfigYesNo(default = True)
+	config.usage.settingsoverlan_epg = ConfigYesNo(default = True)
+	config.usage.settingsoverlan_timers = ConfigYesNo(default = True)
+	config.usage.settingsoverlan_automounts = ConfigYesNo(default = True)
+	config.usage.settingsoverlan_epgrefresh = ConfigYesNo(default = True)
+	config.usage.settingsoverlan_emc = ConfigYesNo(default = True)
+	config.usage.settingsoverlan_webradiofs = ConfigYesNo(default = True)
+	config.usage.settingsoverlan_mp = ConfigYesNo(default = True)
+	config.usage.settingsoverlan_m3u = ConfigYesNo(default = True)
 
 def updateChoices(sel, choices):
 	if choices:

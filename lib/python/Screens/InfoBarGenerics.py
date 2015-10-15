@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 from Components.ActionMap import ActionMap, HelpableActionMap, NumberActionMap
 from Components.Harddisk import harddiskmanager, findMountPoint
 from Components.Input import Input
 from Components.Label import Label
+from Components.About import about
 from Components.MovieList import AUDIO_EXTENSIONS, MOVIE_EXTENSIONS, DVD_EXTENSIONS
 import Screens.MovieSelection
 from Components.PluginComponent import plugins
@@ -47,7 +47,7 @@ from Screens.TimerEntry import TimerEntry as TimerEntry
 from Tools import Directories, Notifications
 from Tools.Directories import pathExists, fileExists, getRecordingFilename, copyfile, moveFiles, resolveFilename, SCOPE_TIMESHIFT, SCOPE_CURRENT_SKIN
 from Tools.KeyBindings import getKeyDescription
-from enigma import eTimer, eServiceCenter, eDVBServicePMTHandler, iServiceInformation, iPlayableService, eServiceReference, eEPGCache, eActionMap, eDVBVolumecontrol, getDesktop
+from enigma import eTimer, eServiceCenter, eDVBServicePMTHandler, iServiceInformation, iPlayableService, eServiceReference, eEPGCache, eActionMap, eDVBVolumecontrol, getDesktop, quitMainloop
 from boxbranding import getBoxType, getMachineBrand, getMachineName, getBrandOEM, getDriverDate, getImageVersion, getImageBuild, getMachineProcModel, getMachineBuild
 
 from time import time, localtime, strftime
@@ -1245,7 +1245,8 @@ class InfoBarChannelSelection:
 
 	def LeftPressed(self):
 		if config.usage.leftrightbutton_mode.value == "0":
-			self.zapUp()
+			#self.zapUp()
+			self.zapDown()
 		if config.usage.leftrightbutton_mode.value == "3":
 			self.volumeDown()
 		elif config.usage.leftrightbutton_mode.value == "1":
@@ -1253,7 +1254,8 @@ class InfoBarChannelSelection:
 
 	def RightPressed(self):
 		if config.usage.leftrightbutton_mode.value == "0":
-			self.zapDown()
+			self.zapUp()
+			#self.zapDown()
 		if config.usage.leftrightbutton_mode.value == "3":
 			self.volumeUp()
 		elif config.usage.leftrightbutton_mode.value == "1":
@@ -5438,12 +5440,10 @@ class InfoBarCueSheetSupport:
 	def __serviceStarted(self):
 		if self.is_closing:
 			return
-#		print "new service started! trying to download cuts!"
+		print "new service started! trying to download cuts!"
 		self.downloadCuesheet()
 
-		self.resume_point = None
-		service = self.session.nav.getCurrentlyPlayingServiceOrGroup()
-		if self.ENABLE_RESUME_SUPPORT and not(service and service.toString().startswith("4369:")): #when resume support and not a DVD
+		if self.ENABLE_RESUME_SUPPORT:
 			for (pts, what) in self.cut_list:
 				if what == self.CUT_TYPE_LAST:
 					last = pts
@@ -5457,14 +5457,21 @@ class InfoBarCueSheetSupport:
 			if seekable is None:
 				return # Should not happen?
 			length = seekable.getLength() or (None,0)
-#			print "seekable.getLength() returns:", length
+			print "seekable.getLength() returns:", length
 			# Hmm, this implies we don't resume if the length is unknown...
 			if (last > 900000) and (not length[1]  or (last < length[1] - 900000)):
 				self.resume_point = last
 				l = last / 90000
-				if config.usage.on_movie_start.value == "ask" or not length[1]:
-					Notifications.AddNotificationWithCallback(self.playLastCB, MessageBox, _("Do you want to resume this playback?") + "\n" + (_("Resume position at %s") % ("%d:%02d:%02d" % (l/3600, l%3600/60, l%60))), timeout=10)
+				if "ask" in config.usage.on_movie_start.value or not length[1]:
+					Notifications.AddNotificationWithCallback(self.playLastCB, MessageBox, _("Do you want to resume this playback?") + "\n" + (_("Resume position at %s") % ("%d:%02d:%02d" % (l/3600, l%3600/60, l%60))), timeout=10, default="yes" in config.usage.on_movie_start.value)
 				elif config.usage.on_movie_start.value == "resume":
+# TRANSLATORS: The string "Resuming playback" flashes for a moment
+# TRANSLATORS: at the start of a movie, when the user has selected
+# TRANSLATORS: "Resume from last position" as start behavior.
+# TRANSLATORS: The purpose is to notify the user that the movie starts
+# TRANSLATORS: in the middle somewhere and not from the beginning.
+# TRANSLATORS: (Some translators seem to have interpreted it as a
+# TRANSLATORS: question or a choice, but it is a statement.)
 					Notifications.AddNotificationWithCallback(self.playLastCB, MessageBox, _("Resuming playback"), timeout=2, type=MessageBox.TYPE_INFO)
 
 	def playLastCB(self, answer):
@@ -6088,10 +6095,80 @@ class InfoBarPowersaver:
 			print "[InfoBarPowersaver] goto standby"
 			self.session.open(Screens.Standby.Standby)
 
+class InfoBarSleepTimer:
+	def __init__(self):
+		self.sleepTimer = eTimer()
+		self.sleepStartTime = 0
+		self.sleepTimer.callback.append(self.sleepTimerTimeout)
+
+	def sleepTimerState(self):
+		if self.sleepTimer.isActive():
+			return (self.sleepStartTime - time()) / 60
+		return 0
+
+	def setSleepTimer(self, sleepTime, showMessage = True):
+		print "[InfoBarSleepTimer] set sleeptimer", sleepTime
+		if sleepTime:
+			m = abs(sleepTime / 60)
+			message = _("The sleep timer has been activated.") + "\n" + _("Delay:") + " " + _("%d minutes") % m
+			self.sleepTimer.startLongTimer(sleepTime)
+			self.sleepStartTime = time() + sleepTime
+		else:
+			message = _("The sleep timer has been disabled.")
+			self.sleepTimer.stop()
+		if showMessage:
+			Notifications.AddPopup(message, type = MessageBox.TYPE_INFO, timeout = 5)
+
+	def sleepTimerTimeout(self):
+		if config.usage.sleep_timer_action.value != "standby":
+			isRecordTime = abs(self.session.nav.RecordTimer.getNextRecordingTime() - time()) <= 900 or self.session.nav.RecordTimer.getStillRecording() or abs(self.session.nav.RecordTimer.getNextZapTime() - time()) <= 900
+			isPowerTime = abs(self.session.nav.PowerTimer.getNextPowerManagerTime() - time()) <= 900 or self.session.nav.PowerTimer.isProcessing(exceptTimer = 0)
+			if isRecordTime or isPowerTime:
+				self.setSleepTimer(1800, False)
+				if not Screens.Standby.inStandby:
+					message = _("A Recording, RecordTimer or PowerTimer is running or begins in 15 minutes.\nExtend sleep timer 30 minutes. Your %s %s\nwill shut down after Recording or Powertimer event. Get in Standby now?") % (getMachineBrand(), getMachineName())
+					self.session.openWithCallback(self.goStandby, MessageBox, message, MessageBox.TYPE_YESNO, timeout=180, default=True)
+				return
+		if not Screens.Standby.inStandby:
+			list = [ (_("Yes"), True),
+					(_("No"), False),
+					(_("Extend"), "extend") ]
+			if config.usage.sleep_timer_action.value == "standby":
+				message = _("A sleep timer wants to set your %s %s to standby.\nDo that now or set extend additional minutes?") % (getMachineBrand(), getMachineName())
+			else:
+				message = _("A sleep timer wants to shut down your %s %s.\nDo that now or set extend additional minutes?") % (getMachineBrand(), getMachineName())
+			self.session.openWithCallback(self.sleepTimerTimeoutCallback, MessageBox, message, timeout=180, simple=True, list=list, default=True)
+		else:
+			self.goStandby()
+
+	def sleepTimerTimeoutCallback(self, answer):
+		if answer == "extend":
+			from Screens.SleepTimerEdit import SleepTimerEdit
+			self.session.open(SleepTimerEdit)
+		elif answer:
+			self.goStandby()
+		else:
+			self.setSleepTimer(0)
+
+	def goStandby(self, answer = None):
+		if config.usage.sleep_timer_action.value == "standby" or answer:
+			if not Screens.Standby.inStandby:
+				print "[InfoBarSleepTimer] goto standby"
+				self.session.open(Screens.Standby.Standby)
+		elif answer is None:
+			if not Screens.Standby.inStandby:
+				if not Screens.Standby.inTryQuitMainloop:
+					print "[InfoBarSleepTimer] goto deep standby"
+					self.session.open(Screens.Standby.TryQuitMainloop, 1)
+			else:
+				print "[InfoBarSleepTimer] goto deep standby"
+				quitMainloop(1)
+
 print bcolors.OKGREEN + "~~~~ read box informations ~~~~~~~~~" + bcolors.ENDC
 print bcolors.OKBLUE + "MachineName =", getMachineName() + bcolors.ENDC
 print bcolors.OKBLUE + "MachineBrand =", getMachineBrand() + bcolors.ENDC
 print bcolors.OKBLUE + "BoxType =", getBoxType() + bcolors.ENDC
+print bcolors.OKBLUE + "ChipString =", about.getChipSetString() + bcolors.ENDC
 print bcolors.OKBLUE + "OEM =", getBrandOEM() + bcolors.ENDC
 print bcolors.OKBLUE + "Driverdate =", getDriverDate() + bcolors.ENDC
 print bcolors.OKBLUE + "Imageversion =", getImageVersion() + bcolors.ENDC
@@ -6105,6 +6182,7 @@ try:
 	os.system("echo getMachineName = " + getMachineName() + " >> /etc/enigma2/boxinformations")
 	os.system("echo getMachineBrand = " + getMachineBrand() + " >> /etc/enigma2/boxinformations")
 	os.system("echo getBoxType = " + getBoxType() + " >> /etc/enigma2/boxinformations")
+	os.system("echo getChipSetString = " + about.getChipSetString() + " >> /etc/enigma2/boxinformations")
 	os.system("echo getBrandOEM = " + getBrandOEM() + " >> /etc/enigma2/boxinformations")
 	os.system("echo getDriverDate = " + getDriverDate() + " >> /etc/enigma2/boxinformations")
 	os.system("echo getImageVersion = " + getImageVersion() + " >> /etc/enigma2/boxinformations")

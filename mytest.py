@@ -1,18 +1,6 @@
 import sys, os
 from time import time
 
-if os.path.exists('/dev/lcd2'): # VuDuo2 lcd
-	from fcntl import ioctl
-	led_fd = open("/dev/lcd2",'rw')
-	ioctl(led_fd, 0x10, 25)
-	led_fd.close()
-
-	from pngutil import png_util
-	pngutil = png_util.PNGUtil()
-	pngutilconnect = pngutil.connect()
-	if pngutilconnect:
-		pngutil.send("/usr/share/enigma2/distro-lcd-logo.png")
-
 if os.path.isfile("/usr/lib/enigma2/python/enigma.zip"):
 	sys.path.append("/usr/lib/enigma2/python/enigma.zip")
 
@@ -398,6 +386,9 @@ class PowerKey:
 		globalActionMap.actions["discrete_off"]=self.standby
 		globalActionMap.actions["sleeptimer_standby"]=self.sleepStandby
 		globalActionMap.actions["sleeptimer_deepstandby"]=self.sleepDeepStandby
+		globalActionMap.actions["sleeptimer"]=self.openSleepTimer
+		globalActionMap.actions["powertimer_standby"]=self.sleepStandby
+		globalActionMap.actions["powertimer_deepstandby"]=self.sleepDeepStandby
 		self.standbyblocked = 1
 
 	def MenuClosed(self, *val):
@@ -455,12 +446,14 @@ class PowerKey:
 						return
 		elif action == "standby":
 			self.standby()
-		elif action == "sleeptimerStandby":
+		elif action == "powertimerStandby":
 			val = 3
 			self.setSleepTimer(val)
-		elif action == "sleeptimerDeepStandby":
+		elif action == "powertimerDeepStandby":
 			val = 4
 			self.setSleepTimer(val)
+		elif action == "sleeptimer":
+			self.openSleepTimer()
 
 	def powerdown(self):
 		self.standbyblocked = 0
@@ -475,6 +468,10 @@ class PowerKey:
 	def standby(self):
 		if not Screens.Standby.inStandby and self.session.current_dialog and self.session.current_dialog.ALLOW_SUSPEND and self.session.in_exec:
 			self.session.open(Screens.Standby.Standby)
+
+	def openSleepTimer(self):
+		from Screens.SleepTimerEdit import SleepTimerEdit
+		self.session.open(SleepTimerEdit)
 
 	def setSleepTimer(self, val):
 		from PowerTimer import PowerTimerEntry
@@ -492,10 +489,10 @@ class PowerKey:
 			simulTimerList = self.session.nav.PowerTimer.record(entry)
 
 	def sleepStandby(self):
-		self.doAction(action = "sleeptimerStandby")
+		self.doAction(action = "powertimerStandby")
 
 	def sleepDeepStandby(self):
-		self.doAction(action = "sleeptimerDeepStandby")
+		self.doAction(action = "powertimerDeepStandby")
 
 profile("Scart")
 from Screens.Scart import Scart
@@ -569,7 +566,7 @@ def runScreenTest():
 	profile("Init:PowerKey")
 	power = PowerKey(session)
 
-	if boxtype in ('odinm9', 'et7500', 'ventonhdx', 'maram9', 'ixussone', 'ixussone'):
+	if boxtype in ('sf3038', 'spycat', 'e4hd', 'e4hdc', 'mbmicro', 'et7500', 'mixosf5', 'mixosf7', 'mixoslumi', 'gi9196m', 'maram9', 'ixussone', 'ixussone', 'uniboxhd1', 'uniboxhd2', 'uniboxhd3', 'sezam5000hd', 'mbtwin', 'sezam1000hd', 'mbmini', 'atemio5x00', 'beyonwizt3') or getBrandOEM() in ('fulan'):
 		profile("VFDSYMBOLS")
 		import Components.VfdSymbols
 		Components.VfdSymbols.SymbolsCheck(session)
@@ -588,7 +585,7 @@ def runScreenTest():
 	profile("RunReactor")
 	profile_final()
 
-	if boxtype in ('sf8', 'classm', 'axodin', 'axodinc', 'starsatlx', 'odinm7', 'odinm6', 'xp1000s'):
+	if boxtype in ('sf8', 'classm', 'axodin', 'axodinc', 'starsatlx', 'genius', 'evo'):
 		f = open("/dev/dbox/oled0", "w")
 		f.write('-E2-')
 		f.close()
@@ -605,6 +602,7 @@ def runScreenTest():
 	config.usage.shutdownOK.save()
 	configfile.save()
 
+	os.system("killall -9 showiframe")
 	runReactor()
 
 	print "[mytest.py] normal shutdown"
@@ -639,15 +637,39 @@ def runScreenTest():
 	nextPowerTime = tmp[0]
 	nextPowerTimeInStandby = tmp[1]
 	#plugintimer
-	nextPluginTime = plugins.getNextWakeupTime()
-	nextPluginTimeInStandby = 1
+	tmp = plugins.getNextWakeupTime(getPluginIdent = True)
+	nextPluginTime = tmp[0]
+	nextPluginIdent = tmp[1] #"pluginname | pluginfolder"
+	tmp = tmp[1].lower()
+	#start in standby, depending on plugin type
+	if "epgrefresh" in tmp:
+		nextPluginName = "EPGRefresh"
+		nextPluginTimeInStandby = 1
+	elif "vps" in tmp:
+		nextPluginName = "VPS"
+		nextPluginTimeInStandby = 1
+	elif "serienrecorder" in tmp:
+		nextPluginName = "SerienRecorder"
+		nextPluginTimeInStandby = 1
+	elif "elektro" in tmp:
+		nextPluginName = "Elektro"
+		nextPluginTimeInStandby = 1
+	elif "minipowersave" in tmp:
+		nextPluginName = "MiniPowersave"
+		nextPluginTimeInStandby = 1
+	elif "enhancedpowersave" in tmp:
+		nextPluginName = "EnhancedPowersave"
+		nextPluginTimeInStandby = 1
+	else:
+		#default for plugins
+		nextPluginName = nextPluginIdent
+		nextPluginTimeInStandby = 0
 
 	wakeupList = [
 		x for x in ((nextRecordTime, 0, nextRecordTimeInStandby),
 					(nextZapTime, 1, nextZapTimeInStandby),
 					(nextPowerTime, 2, nextPowerTimeInStandby),
 					(nextPluginTime, 3, nextPluginTimeInStandby))
-		#if x[0] != -1 and x[0] >= nowTime - 60 #no startTime[0] in the past (e.g. vps-plugin -> if current time between 'recordtimer begin - vps initial time' is startTime in the past ...)
 		if x[0] != -1
 	]
 	wakeupList.sort()
@@ -661,7 +683,7 @@ def runScreenTest():
 	else:
 		wpoffset = int(config.workaround.wakeuptimeoffset.value)
 
-	config.misc.nextWakeup.value = "-1,-1,0,0,-1,0"
+	print "="*100
 	if wakeupList and wakeupList[0][0] > 0:
 		startTime = wakeupList[0]
 		# wakeup time is 5 min before timer starts + offset
@@ -669,37 +691,37 @@ def runScreenTest():
 		if (wptime - nowTime) < 120: # no time to switch box back on
 			wptime = int(nowTime) + 120  # so switch back on in 120 seconds
 
+		#check for plugin-, zap- or power-timer to enable the 'forced' record-timer wakeup
 		forceNextRecord = 0
-		if startTime[1] != 0 and nextRecordTime > 0:
-			#check for plugin-, zap- or power-timer to enable the forced record-timer wakeup - when next record starts in 15 mins
-			if abs(nextRecordTime - startTime[0]) <= 900:
-				forceNextRecord = 1
-			else:
-			#check for vps-plugin to enable the record-timer wakeup
-				try:
-					if config.plugins.vps.allow_wakeup.value:
-						if startTime[0] + config.plugins.vps.initial_time.value * 60 == nextRecordTime \
-						or startTime[0] - 20 + config.plugins.vps.initial_time.value * 60 == nextRecordTime: #vps using begin time, not start prepare time
-							forceNextRecord = 1
-				except:
-					pass
 		setStandby = startTime[2]
-		print "="*100
-		print "[mytest.py] set next wakeup type to '%s' %s" % ({0:"record-timer",1:"zap-timer",2:"power-timer",3:"plugin-timer"}[startTime[1]],{0:"and starts normal",1:"and starts in standby"}[setStandby])
+		if startTime[1] != 0 and nextRecordTime > 0:
+			#when next record starts in 15 mins
+			if abs(nextRecordTime - startTime[0]) <= 900:
+				setStandby = forceNextRecord = 1
+			#by vps-plugin
+			elif startTime[1] == 3 and nextPluginName == "VPS":
+				setStandby = forceNextRecord = 1
+
+		if startTime[1] == 3:
+			nextPluginName = " (%s)" % nextPluginName
+		else:
+			nextPluginName = ""
+		print "[mytest.py] set next wakeup type to '%s'%s %s" % ({0:"record-timer",1:"zap-timer",2:"power-timer",3:"plugin-timer"}[startTime[1]], nextPluginName, {0:"and starts normal",1:"and starts in standby"}[setStandby])
 		if forceNextRecord:
-			print "[mytest.py] timer is set from 'vps-plugin' or just before a 'record-timer' starts, set 'record-timer' wakeup flag"
+			print "[mytest.py] set from 'vps-plugin' or just before a 'record-timer' starts, set 'record-timer' wakeup flag"
 		print "[mytest.py] set next wakeup time to", strftime("%a, %Y/%m/%d %H:%M:%S", localtime(wptime))
 		#set next wakeup
 		setFPWakeuptime(wptime)
 		#set next standby only after shutdown in deep standby
-		#print Screens.Standby.quitMainloopCode
 		if Screens.Standby.quitMainloopCode != 1:
-			setStandby = 2 # 0=no standby, but get in standby if wakeup to timer start > 60 sec, 1=standby, 2=no standby, when before was not in deep-standby
+			setStandby = 2 # 0=no standby, but get in standby if wakeup to timer start > 60 sec (not for plugin-timer, here is no standby), 1=standby, 2=no standby, when before was not in deep-standby
 		config.misc.nextWakeup.value = "%d,%d,%d,%d,%d,%d" % (wptime,startTime[0],startTime[1],setStandby,nextRecordTime,forceNextRecord)
 	else:
+		config.misc.nextWakeup.value = "-1,-1,0,0,-1,0"
+		setFPWakeuptime(int(nowTime) - 3600) #minus one hour -> overwrite old wakeup time
 		print "[mytest.py] no set next wakeup time"
-	print "="*100
 	config.misc.nextWakeup.save()
+	print "="*100
 
 	profile("stopService")
 	session.nav.stopService()

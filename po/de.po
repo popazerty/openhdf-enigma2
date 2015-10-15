@@ -3,15 +3,16 @@ msgstr ""
 "Project-Id-Version: enigma2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-19 23:44+0100\n"
-"PO-Revision-Date: 2015-08-09 08:55+0200\n"
+"PO-Revision-Date: 2015-10-11 16:31+0200\n"
 "Last-Translator: Koivo <koivo@hdfreaks.cc>\n"
 "Language-Team: AndyBlacburn, j-ot&Trial\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Poedit 1.8.3\n"
+"X-Generator: Poedit 1.8.5\n"
 "X-Poedit-SourceCharset: iso-8859-15\n"
 
 msgid "Switch to Radio Mode"
@@ -57,7 +58,7 @@ msgid "Start instant recording"
 msgstr "Startet eine Sofortaufnahme"
 
 msgid "Hotkey Setup"
-msgstr "Offnet die Hotkey Einstellungen"
+msgstr "Hotkey Einstellungen"
 
 msgid "History next"
 msgstr "Zap Verlauf vor"
@@ -184,6 +185,9 @@ msgstr "Einstellungen"
 
 msgid "Network Menu"
 msgstr "Netzwerk-Einstellungen"
+
+msgid "Network Adapter"
+msgstr "Netzwerk-Adapter"
 
 msgid "Plugin Browser"
 msgstr "Alle Plugins anzeigen"
@@ -892,7 +896,7 @@ msgstr "Powertimer Nachrichtenfenster Countdown (in Sekunden)"
 
 #, python-format
 msgid "Configure how long the powertimer message is displayed."
-msgstr "Legt fest wie lange die Nachricht zum Ausführen eines Powertimers angezeigt wird."
+msgstr "Legt fest wie lange die Nachricht zum Ausführen eines \t angezeigt wird."
 
 #, python-format
 msgid ""
@@ -989,7 +993,7 @@ msgid "A recording is currently running. Please stop the recording before trying
 msgstr "Zur Zeit sind Aufnahmen aktiv. Bitte Aufnahme beenden, bevor gesucht wird."
 
 msgid "A recording is currently running. Please stop the recording before trying to start the satfinder."
-msgstr "Zur Zeit sind Aufnahmen aktiv. Bitte Aufnahme beenden, bevor der Sat-Finder gestartet wird."
+msgstr "Zur Zeit sind Aufnahmen aktiv. Bitte Aufnahme beenden, bevor der Signal-Finder gestartet wird."
 
 msgid "Yes, delete from Timerlist"
 msgstr "Ja, aus der Timerliste löschen."
@@ -1064,6 +1068,33 @@ msgid ""
 msgstr ""
 "Ein Ausschalttimer möchte die %s %s ausschalten.\n"
 "Jetzt ausschalten?"
+
+msgid "Show advanced settings"
+msgstr "Erweiterte Einstellungen anzeigen"
+
+msgid "Enable Network Traffic check"
+msgstr "Überprüfung der Netzwerkdatenübertragung aktivieren"
+
+msgid "Enable Network IP address check"
+msgstr "Überprüfung von IP-Adressen aktivieren"
+
+msgid "Restrict the active time range"
+msgstr "Den aktiven Zeitbereich einschränken"
+
+msgid "without Query"
+msgstr "ohne Rückfrage"
+
+msgid "only in Standby"
+msgstr "nur im Standby"
+
+msgid "Standard (always)"
+msgstr "Standard (immer)"
+
+msgid "Execution condition"
+msgstr "Ausführungsbedingung"
+
+msgid "The setting 'without query' is the same as 'standard' without additional confirmation query. So can the receiver shutdown also if you not watch tv (e.g. video, hbbtv) -  only recommended for sleep timer. All other dependencies (e.g. recordings, time range) stay persist."
+msgstr "Die Einstellung 'ohne Rückfrage' ist das gleiche wie 'Standard' ohne zusätzliche Bestätigungsabfrage. So kann der Receiver herunterfahren wenn Sie nicht fernsehen (z.B. Video, HbbTV) - nur für Sleep-Timer empfohlen. Alle anderen Abhängigkeiten (z.B. Aufnahmen, Zeitbereich) bleiben bestehen."
 
 msgid "A small overview of the available icon states and actions."
 msgstr "Eine kurze Übersicht der verfügbaren Iconzustände und Aktionen."
@@ -1800,6 +1831,18 @@ msgstr "Helligkeit (Normal)"
 
 msgid "Brightness (Standby)"
 msgstr "Helligkeit (Bereitschaft)"
+
+msgid "Brightness (Dimmed)"
+msgstr "Helligkeit (gedimmt)"
+
+msgid "Configure the brightness level of the front panel display for dimmed operation."
+msgstr "Konfigurieren Sie die Helligkeit des Displays für den gedimmten Zustand."
+
+msgid "Dim delay"
+msgstr "Ausblendungs-Verzögerung"
+
+msgid "Dim the LCD after specified time."
+msgstr "Das Display wird nach der angegebenen Zeit gedimmt."
 
 msgid "Buffers:"
 msgstr "Puffer:"
@@ -3391,7 +3434,7 @@ msgstr "Softwareupdate für %s %s?"
 
 #, python-format
 msgid "Show new Packages"
-msgstr "Zeige zu aktualisierende Pakete an"
+msgstr "Zeige die zu aktualisierenden Pakete an"
 
 #, python-format
 msgid "Upgrade and ask to reboot"
@@ -5251,7 +5294,7 @@ msgid "Mins Secs"
 msgstr "Minuten Sekunden"
 
 msgid "Missing "
-msgstr "Fehlend"
+msgstr "Da fehlt etwas ..."
 
 msgctxt "Satellite configuration mode"
 msgid "Mode"
@@ -6514,7 +6557,7 @@ msgstr "Powertimer Liste"
 msgid "PowerTimer Overview"
 msgstr "PowerTimer Überblick"
 
-msgid "PowerTimers"
+msgid "PowerTimer"
 msgstr "Einschalt / Ausschalt Timer"
 
 msgid "Predefined"
@@ -6546,6 +6589,24 @@ msgstr "Bevorzugte Untertitel für jeden Sender speichern"
 
 msgid "Preferred tuner"
 msgstr "Bevorzugter Tuner"
+
+msgid "Preferred tuner DVB-S"
+msgstr "Bevorzugter Tuner bei DVB-S"
+
+msgid "Preferred tuner DVB-T"
+msgstr "Bevorzugter Tuner bei DVB-T"
+
+msgid "Preferred tuner DVB-C"
+msgstr "Bevorzugter Tuner bei DVB-C"
+
+msgid "Preferred tuner DVB-S for recordings"
+msgstr "Bevorzugter Tuner DVB-S für Aufnahmen"
+
+msgid "Preferred tuner DVB-T for recordings"
+msgstr "Bevorzugter Tuner DVB-T für Aufnahmen"
+
+msgid "Preferred tuner DVB-C for recordings"
+msgstr "Bevorzugter Tuner DVB-C für Aufnahmen"
 
 msgid "Prepare another USB stick for image flashing"
 msgstr "Weiteren USB-Stick zum Image-Flashen vorbereiten"
@@ -6804,11 +6865,14 @@ msgstr "Aufnahmezeit aufgrund des in Konflikt stehenden Timers %s begrenzt"
 msgid "Recording"
 msgstr "Aufnahme"
 
+msgid "Recording / Playback"
+msgstr "Aufnahme / Wiedergabe"
+
 msgid "Recording in progress"
 msgstr "Aktive Aufnahmen"
 
 msgid "Recording settings"
-msgstr "Aufnahme-Einstellungen"
+msgstr "Aufnahme/Wiedergabe-Einstellung"
 
 msgid "Recording type"
 msgstr "Aufnahmetyp"
@@ -7214,8 +7278,8 @@ msgstr "Satelliten Längengrad:"
 msgid "Satellites"
 msgstr "Satelliten"
 
-msgid "Satfinder"
-msgstr "Sat-Finder"
+msgid "Signal Finder"
+msgstr "Signal-Finder"
 
 msgid "Sats"
 msgstr "Satelliten"
@@ -7333,6 +7397,12 @@ msgstr "Scrollgeschwindigkeit"
 
 msgid "Scrolling Speed (software render)"
 msgstr "Scrollgeschwindigkeit (Software Renderer)"
+
+msgid "Set the scrolling speed of text on the front display, this is used by software renderer in some skins."
+msgstr "Setzen Sie die Scrollgeschwindigkeit für Text im Display. Wird vom Software-Renderer in einigen Skins genutzt."
+
+msgid "Set the delay time between repeated loops, this is used by software renderer in some skins."
+msgstr "Setzt die Verzögerungszeit zwischen Scrolldurchläufen. Wird vom Software-Renderer in einigen Skins genutzt."
 
 msgid "Scrolling delay (software render)"
 msgstr "Scrollverzögerung (Software Renderer)"
@@ -8195,6 +8265,9 @@ msgstr "Einzeln"
 
 msgid "Single EPG"
 msgstr "Einfach-EPG"
+
+msgid "Change timer"
+msgstr "Timer ändern"
 
 msgid "Single satellite"
 msgstr "Einzelnen Satelliten"
@@ -9413,7 +9486,7 @@ msgid "Timeshift saved to your harddisk!"
 msgstr "TimeShift auf Festplatte gesichert!"
 
 msgid "Timeshift settings"
-msgstr "TimeShift-Einstellungen"
+msgstr "TimeShift-Einstellung"
 
 msgid "Older files in the timeshift directory are removed on every event change."
 msgstr "Ältere Timeshift Dateien werden bei jedem Event gelöscht."
@@ -10533,6 +10606,9 @@ msgstr "Ja, die Einstellungen jetzt wiederherstellen"
 msgid "Yes, returning to movie list"
 msgstr "Ja, zurück zur Filmauswahl"
 
+msgid "Yes, delete this movie and return to movie list"
+msgstr "Ja, diesen Film löschen und zurück zur Filmauswahl"
+
 msgid "Yesterday"
 msgstr "Gestern"
 
@@ -10840,7 +10916,7 @@ msgstr ""
 msgid "Zap back to service before satfinder?"
 msgstr ""
 "Zurückschalten zum Sender, der vor dem\n"
-"Öffnen des Satfinders lief?"
+"Öffnen des Signal-Finders lief?"
 
 msgid "Zap back to service before tuner setup?"
 msgstr "Zurückschalten zum vorher laufenden Sender?"
@@ -12541,12 +12617,6 @@ msgstr "Konfigurieren ob und wie das Verschlüsselungsicon angezeigt wird."
 msgid "event info / channel selection"
 msgstr "Event Anzeige / Kanalliste"
 
-msgid "Set the scrolling speed of text on the front display, this is used by software renderer in some skins."
-msgstr "Setzen Sie die Scroll Geschwindigkeit für Text im Display, wird vom Software Renderer in einigen Skins genutzt."
-
-msgid "Set the delay time between repeated loops, this is used by software renderer in some skins."
-msgstr "Setzen Sie die Verzögerungszeit zwischen Scroll Durchläufen, wird vom Software Renderer in einigen Skins genutzt."
-
 msgid "Setup save / load EPG"
 msgstr "Einstellungen zum speichern / laden vom EPG"
 
@@ -12767,6 +12837,12 @@ msgstr "Prov/Fav lang"
 msgid "Power long"
 msgstr "Power lang"
 
+msgid "Power (use button menu)"
+msgstr "Power (Tasten-Einstellungen)"
+
+msgid "Power long (use button menu)"
+msgstr "Power lang (Tasten-Einstellungen)"
+
 msgid "Power down"
 msgstr "Power losgelassen"
 
@@ -12898,3 +12974,69 @@ msgstr "Eigenen Offset vom Aufwachen bis zum Timerstart benutzen [min]"
 
 msgid "The standard wakeup time is 5 minutes (or box specific) before a timer starts. Is the real wake up time outside 10 mins (some boxes starts not punctually) to the next timer will not switched to standby. (minus value = wake up to timer is shorter)"
 msgstr "Standard ist 5 min (oder Box spezifisch) vor einem Timer aufzuwachen. Ist die echte Aufwachzeit ausserhalb 10 min (einige Boxen starten nicht pünktlich) bis zum nächsten Timerstart wird nicht in den Standby geschaltet (Minus = Aufwachzeit bis zum Timer wird kürzer)"
+
+msgid "SleepTimer"
+msgstr "Schlaf Timer"
+
+msgid "Execute after current event"
+msgstr "Ausführen nach der Sendung"
+
+msgid "Execute in "
+msgstr "Ausführen in "
+
+msgid "Timer is activated: +%d min"
+msgstr "Timer ist aktiviert:  +%d min"
+
+msgid "Timer is not activated"
+msgstr "Timer ist nicht aktiviert"
+
+msgid "Timer action"
+msgstr "Timer Aktion"
+
+msgid "Configure the duration in minutes for the sleep timer."
+msgstr "Konfigurieren Sie die Dauer in Minuten für den Ausschalt-Timer."
+
+msgid "Select the sleep timer action."
+msgstr "Wählen Sie die Ausschalt-Timer-Aktion."
+
+msgid ""
+"A sleep timer wants to set your %s %s to standby.\n"
+"Do that now or set extend additional minutes?"
+msgstr ""
+"Ein Ausschalt-Timer möchte ihre %s %s in den Standby versetzen.\n"
+"Jetzt ausführen oder zusätzliche Minuten einstellen?"
+
+msgid ""
+"A sleep timer wants to shut down your %s %s.\n"
+"Do that now or set extend additional minutes?"
+msgstr ""
+"Ein Ausschalt-Timer möchte ihre %s %s ausschalten.\n"
+"Jetzt ausführen oder zusätzliche Minuten einstellen?"
+
+msgid ""
+"A Recording, RecordTimer or PowerTimer is running or begins in 15 minutes.\n"
+"Extend sleep timer 30 minutes. Your %s %s\n"
+"will shut down after Recording or Powertimer event. Get in Standby now?"
+msgstr ""
+"Eine Aufnahme, Aufnahmetimer oder Powertimer ist aktiv oder beginnt in 15 Minuten.\n"
+"Der Ausschalt-Timer wird um 30 Minuten verlängert und schaltet ihre\n"
+"%s %s nach dem Aufnahme oder Powertimer Ereignis ab.\n"
+"Jetzt in den Standby gehen?"
+
+msgid "Extend"
+msgstr "Verlängern"
+
+msgid "The sleep timer has been activated."
+msgstr "Der Ausschalt-Timer wurde aktiviert."
+
+msgid "The sleep timer has been disabled."
+msgstr "Der Ausschalt-Timer wurde deaktiviert."
+
+msgid "Do you want to backup your image and settings before?"
+msgstr "Soll vorher ein Backup vom Image oder den Settings gemacht werden?"
+
+msgid "Backup your settings now?"
+msgstr "Sollen jetzt die Einstellungen gesichert werden?"
+
+msgid "Backup your image now?"
+msgstr "Soll jetzt ein komplettes Backup vom Image erstellt werden?"

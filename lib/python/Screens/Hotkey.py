@@ -15,14 +15,14 @@ from enigma import eServiceReference, eActionMap
 from Components.Label import Label
 import os
 
-updateversion = "31.07.2015"
+updateversion = "04.10.2015"
 
 def getHotkeys():
 	return [(_("OK long"), "okbutton_long", "Infobar/openInfoBarEPG"),
 	(_("Exit "), "exit", ""),
 	(_("Exit long"), "exit_long", ""),
-	(_("Left"), "cross_left", "Infobar/zapDown"),
-	(_("Right"), "cross_right", "Infobar/zapUp"),
+	(_("Left"), "cross_left", ""),
+	(_("Right"), "cross_right", ""),
 	(_("Up"), "cross_up", "Infobar/switchChannelUp"),
 	(_("Down"), "cross_down", "Infobar/switchChannelDown"),
 	(_("Red"), "red", "Infobar/activateRedButton"),
@@ -97,7 +97,7 @@ def getHotkeys():
 	(_("Previous long"), "previous_long", ""),
 	(_("Radio"), "radio", "Infobar/showRadio"),
 	(_("Radio long"), "radio_long", "Plugins/Extensions/webradioFS/1"),
-	(_("Record"), "rec", ""),
+	(_("Record"), "rec", "Infobar/instantRecord"),
 	(_("Record long"), "rec_long", "Infobar/startInstantRecording"),
 	(_("Rewind"), "rewind", ""),
 	(_("Sat "), "sat", "Infobar/openSatellites"),
@@ -163,7 +163,7 @@ def getHotkeyFunctions():
 			twinPlugins.append(plugin.name)
 	hotkeyFunctions.append((_("Show Graphical Multi EPG"), "Infobar/openGraphEPG", "EPG"))
 	hotkeyFunctions.append((_("Show Event View"), "Infobar/openEventView", "EPG"))
-	hotkeyFunctions.append((_("Show Event Info"), "Infobar/showEventInfo", "EPG"))
+	#hotkeyFunctions.append((_("Show Event Info"), "Infobar/showEventInfo", "EPG"))
 	hotkeyFunctions.append((_("Show Event Info Plugins"), "Infobar/showEventInfoPlugins", "EPG"))
 	hotkeyFunctions.append((_("Show Single Service EPG"), "Infobar/openSingleServiceEPG", "EPG"))
 	hotkeyFunctions.append((_("Show Multi Service EPG"), "Infobar/openMultiServiceEPG", "EPG"))
@@ -222,7 +222,7 @@ def getHotkeyFunctions():
 	hotkeyFunctions.append((_("Automatic Scan"), "Module/Screens.ScanSetup/ScanSimple", "Scanning"))
 	for plugin in plugins.getPluginsForMenu("scan"):
 		hotkeyFunctions.append((plugin[0], "MenuPlugin/scan/" + plugin[2], "Scanning"))
-	hotkeyFunctions.append((_("Network"), "Module/Screens.NetworkSetup/NetworkAdapterSelection", "Setup"))
+	hotkeyFunctions.append((_("Network Adapter"), "Module/Screens.NetworkSetup/NetworkAdapterSelection", "Setup"))
 	hotkeyFunctions.append((_("Network Menu"), "Infobar/showNetworkMounts", "Setup"))
 	hotkeyFunctions.append((_("Plugin Browser"), "Module/Screens.PluginBrowser/PluginBrowser", "Setup"))
 	hotkeyFunctions.append((_("Channel Info"), "Module/Screens.ServiceInfo/ServiceInfo", "Setup"))
@@ -237,6 +237,7 @@ def getHotkeyFunctions():
 	hotkeyFunctions.append((_("Restart"), "Module/Screens.Standby/TryQuitMainloop/2", "Power"))
 	hotkeyFunctions.append((_("Restart Enigma"), "Module/Screens.Standby/TryQuitMainloop/3", "Power"))
 	hotkeyFunctions.append((_("Deep-Standby"), "Module/Screens.Standby/TryQuitMainloop/1", "Power"))
+	hotkeyFunctions.append((_("SleepTimer"), "Module/Screens.SleepTimerEdit/SleepTimerEdit", "Power"))
 	hotkeyFunctions.append((_("Usage Setup"), "Setup/usage", "Setup"))
 	hotkeyFunctions.append((_("User Interface"), "Setup/userinterface", "Setup"))
 	hotkeyFunctions.append((_("Recording Setup"), "Setup/recording", "Setup"))
@@ -244,6 +245,8 @@ def getHotkeyFunctions():
 	hotkeyFunctions.append((_("Subtitles Settings"), "Setup/subtitlesetup", "Setup"))
 	hotkeyFunctions.append((_("Language"), "Module/Screens.LanguageSelection/LanguageSelection", "Setup"))
 	hotkeyFunctions.append((_("Skin setup"), "Module/Screens.SkinSelector/SkinSelector", "Setup"))
+	if os.path.isfile("/usr/lib/enigma2/python/Plugins/Extensions/Kodi/plugin.pyo"):
+		hotkeyFunctions.append((_("Kodi Media Center"), "Kodi/", "Plugins"))
 	if os.path.isdir("/etc/ppanel"):
 		for x in [x for x in os.listdir("/etc/ppanel") if x.endswith(".xml")]:
 			x = x[:-4]
@@ -252,8 +255,6 @@ def getHotkeyFunctions():
 		for x in [x for x in os.listdir("/usr/scripts") if x.endswith(".sh")]:
 			x = x[:-3]
 			hotkeyFunctions.append((_("Shellscript") + " " + x, "Shellscript/" + x, "Shellscripts"))
-	#if os.path.isfile("/usr/lib/enigma2/python/Plugins/Extensions/EnhancedMovieCenter/plugin.pyo"):
-	#	hotkeyFunctions.append((_("Enhanced Movie Center"), "EMC/", "Plugins"))
 	return hotkeyFunctions
 
 class HotkeySetup(Screen):
@@ -644,3 +645,7 @@ class InfoBarHotkey():
 					open(showMoviesNew(InfoBar.instance))
 				except Exception as e:
 					print('[EMCPlayer] showMovies exception:\n' + str(e))
+			elif selected[0] == "Kodi":
+				if os.path.isfile("/usr/lib/enigma2/python/Plugins/Extensions/Kodi/plugin.pyo"):
+					from Plugins.Extensions.Kodi.plugin import KodiMainScreen
+					self.session.open(KodiMainScreen)

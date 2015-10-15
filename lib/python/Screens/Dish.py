@@ -135,8 +135,9 @@ class Dish(Screen):
 			self.hide()
 
 	def __serviceTunedIn(self):
-		self.pmt_timeout = self.close_timeout
-		self.timeoutTimer.start(500, False)
+		if self.close_timeout is not None:
+			self.pmt_timeout = self.close_timeout
+			self.timeoutTimer.start(500, False)
 
 	def testIsTuned(self):
 		if self.pmt_timeout >= 0:
@@ -223,7 +224,13 @@ class Dish(Screen):
 		nr = self.getCurrentTuner()
 		if nr is not None:
 			nims = nimmanager.nimList()
-			return str(nims[nr].split(':')[:1][0].split(' ')[1])
+			if nr < len(nims) and nr >= 0:
+				return "".join(nims[nr].split(':')[:1])
+			print "[Dish.py] bug hunting nr: %s\n" %nr
+			print "[Dish.py] bug hunting nims:\n"
+			print nims
+			raise
+#			return " ".join((_("Tuner"),str(nr)))
 		return ""
 
 	def OrbToStr(self, orbpos):
