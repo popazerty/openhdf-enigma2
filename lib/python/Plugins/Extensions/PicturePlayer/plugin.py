@@ -1,4 +1,7 @@
 from Plugins.Plugin import PluginDescriptor
+from enigma import getDesktop
+from Components.config import config
+from ui import *
 
 #------------------------------------------------------------------------------------------
 
@@ -13,6 +16,11 @@ def picshow(*args, **kwa):
 def main(session, **kwargs):
 	from ui import picshow
 	session.open(picshow)
+
+def menu(menuid, **kwargs):
+	if menuid == "mainmenu" and config.pic.onMainMenu.value:
+		return [(_("Picture player"), main, "picshow", 45)]
+	return []
 
 def filescan_open(list, session, **kwargs):
 	# Recreate List as expected by PicView
@@ -42,6 +50,16 @@ def filescan(**kwargs):
 		)
 
 def Plugins(**kwargs):
-	return \
+	screenwidth = getDesktop(0).size().width()
+	if screenwidth and screenwidth == 1920:
+		return \
+			[PluginDescriptor(name=_("Picture player"), description=_("fileformats (BMP, PNG, JPG, GIF)"), icon="pictureplayerhd.png", where = PluginDescriptor.WHERE_PLUGINMENU, needsRestart = False, fnc=main),
+			 PluginDescriptor(name=_("Picture player"), where=PluginDescriptor.WHERE_EXTENSIONSMENU, fnc=main),
+			 PluginDescriptor(name=_("Picture player"), description=_("fileformats (BMP, PNG, JPG, GIF)"), where = PluginDescriptor.WHERE_MENU, fnc=menu),
+			 PluginDescriptor(name=_("Picture player"), where = PluginDescriptor.WHERE_FILESCAN, needsRestart = False, fnc = filescan)]
+	else:
+		return \
 		[PluginDescriptor(name=_("Picture player"), description=_("fileformats (BMP, PNG, JPG, GIF)"), icon="pictureplayer.png", where = PluginDescriptor.WHERE_PLUGINMENU, needsRestart = False, fnc=main),
-		 PluginDescriptor(name=_("Picture player"), where = PluginDescriptor.WHERE_FILESCAN, needsRestart = False, fnc = filescan)]
+			 PluginDescriptor(name=_("Picture player"), where=PluginDescriptor.WHERE_EXTENSIONSMENU, fnc=main),
+			 PluginDescriptor(name=_("Picture player"), description=_("fileformats (BMP, PNG, JPG, GIF)"), where = PluginDescriptor.WHERE_MENU, fnc=menu),
+			 PluginDescriptor(name=_("Picture player"), where = PluginDescriptor.WHERE_FILESCAN, needsRestart = False, fnc = filescan)]

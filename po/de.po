@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: enigma2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-19 23:44+0100\n"
-"PO-Revision-Date: 2015-10-11 16:31+0200\n"
+"PO-Revision-Date: 2016-02-06 09:06+0100\n"
 "Last-Translator: Koivo <koivo@hdfreaks.cc>\n"
 "Language-Team: AndyBlacburn, j-ot&Trial\n"
 "Language: de\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 1.8.7\n"
 "X-Poedit-SourceCharset: iso-8859-15\n"
 
 msgid "Switch to Radio Mode"
@@ -326,7 +326,7 @@ msgid "Flash On the Fly"
 msgstr "Flashen   Online / Local"
 
 msgid "Unzipping files, Please wait ..."
-msgstr "Datei wird entpackt, Bitte warten..."
+msgstr "Datei wird entpackt, bitte warten ..."
 
 msgid " (disabled)"
 msgstr "(deaktiviert)"
@@ -1200,6 +1200,15 @@ msgstr "Autotimer hinzufügen"
 msgid "Add Timer"
 msgstr "Timer hinzufügen"
 
+msgid "Delete timer"
+msgstr "Timer entfernen"
+
+msgid "Edit timer"
+msgstr "Timer ändern"
+
+msgid "Disable timer"
+msgstr "Timer deaktivieren"
+
 #, python-format
 msgid "Add filter"
 msgstr "Filter hinzufügen"
@@ -1448,6 +1457,9 @@ msgstr "Immer nachfragen"
 msgid "Show columns"
 msgstr "Zeige Spalten"
 
+msgid "Channel name wide"
+msgstr "Angepasste Breite des Sendernamens"
+
 msgid "Show record indicator"
 msgstr "Zeige Record Anzeige"
 
@@ -1455,7 +1467,15 @@ msgid "Red colored"
 msgstr "Rot eingefärbt"
 
 msgid "Divide"
-msgstr "Aufgeteilt"
+msgstr "Standard"
+
+#, python-format
+msgid "%d pixels wide"
+msgstr "%d Pixel breit"
+
+#, python-format
+msgid "%s pixels wide"
+msgstr "%s Pixel breit"
 
 msgid "Enable fallback remote receiver"
 msgstr "Aktiviere Reservereceiver"
@@ -1471,10 +1491,6 @@ msgstr "URL des Reservereceiver"
 
 msgid "Configure which tuner will be preferred for recordings, when more than one tuner is available. 'Disabled' would select a tuner based on preferred tuner in customise screen. 'Auto' would choose based on E2's default rules, ignoring preferred tuner in customise screen."
 msgstr "Konfiguriere welcher Tuner für Aufnahmen bevorzugt werden soll wenn mehr als ein Tuner verfügbar ist. 'Deaktiviert' verwendet den bevorzugten Tuner der unter Anpassen eingestellt ist. 'Auto' wählt den Tuner nach E2-Regeln und ignoriert die Einstellung in Anpassen."
-
-#, python-format
-msgid "%d pixels wide"
-msgstr "%d Pixel breit"
 
 msgid "Always show bouquets"
 msgstr "Zeige Favoritenliste immer an"
@@ -2329,13 +2345,22 @@ msgid "Color space"
 msgstr "Farbraum"
 
 msgid "Command To Run"
-msgstr "Kommando zum Ausführen"
+msgstr "Befehl zum Ausführen"
+
+msgid "What Day of week ?"
+msgstr "An welchem Wochentag?"
+
+msgid "What Day of month ?"
+msgstr "An welchem Tag des Monats?"
+
+msgid "Remove Confirmation"
+msgstr "Löschen bestätigen"
 
 msgid "Command order"
 msgstr "Befehlsfolge"
 
 msgid "Command type"
-msgstr ""
+msgstr "Befehlsart"
 
 msgid "Committed DiSEqC command"
 msgstr "DiSEqC-Befehl übertragen"
@@ -2933,6 +2958,15 @@ msgstr "Schnitteditor"
 msgid "Cutlist editor..."
 msgstr "Schnitteditor..."
 
+msgid "execute cuts (requires MovieCut plugin)"
+msgstr "Filmschnitt ausführen (benötigt MovieCut Plugin)"
+
+msgid "Enable intro screen"
+msgstr "Begrüßungsbildschirm aktivieren"
+
+msgid "Disable intro screen"
+msgstr "Begrüßungsbildschirm abschalten"
+
 msgid "Czech"
 msgstr "Tchechisch"
 
@@ -3423,14 +3457,14 @@ msgstr ""
 
 #, python-format
 msgid "Do you want to update your %s %s"
-msgstr "Softwareupdate für %s %s"
+msgstr "Update für %s %s"
 
 msgid "Aborting updateprogress"
 msgstr "Update wurde abgebrochen"
 
 #, python-format
 msgid "Do you want to update your %s %s?"
-msgstr "Softwareupdate für %s %s?"
+msgstr "Update für %s %s?"
 
 #, python-format
 msgid "Show new Packages"
@@ -4023,6 +4057,9 @@ msgid "Full screen"
 msgstr "Vollbild"
 
 msgid "Fulview resulution"
+msgstr "Vollbild Auflösung"
+
+msgid "Fullview resolution"
 msgstr "Vollbild Auflösung"
 
 msgid "Automatic resolution"
@@ -4637,6 +4674,16 @@ msgstr "Direkt ausschalten"
 
 msgid "In order to record a timer, the TV was switched to the recording service!\n"
 msgstr "Um die Timeraufnahme durchführen zu können, wurde auf den aufzunehmenden Sender umgeschaltet!\n"
+
+msgid ""
+"In order to record a timer, a tuner was freed successfully:\n"
+"\n"
+msgstr ""
+"Um eine Timer-Aufnahme zu starten, wurde auf einen freien Tuner geschaltet.\n"
+"\n"
+
+msgid "The TV was switched to the recording service!\n"
+msgstr "Es wurde auf den Sender umgeschaltet, auf dem die Aufnahme läuft!\n"
 
 msgid "In progress"
 msgstr "In Bearbeitung"
@@ -5413,6 +5460,9 @@ msgstr "Film Verzeichnis"
 msgid "Movie selection"
 msgstr "Film Auswahl"
 
+msgid "On end of movie (as menu)"
+msgstr "Am Ende des Films (als Menü)"
+
 msgid "Movie/Drama"
 msgstr "Film/Drama"
 
@@ -5597,6 +5647,15 @@ msgstr "Nachrichten/Gegenwart"
 msgctxt "now/next: 'next' event label"
 msgid "Next"
 msgstr "Demnächst"
+
+msgid "NOW"
+msgstr "Jetzt"
+
+msgid "NEXT"
+msgstr "Danach"
+
+msgid "MORE"
+msgstr "Später"
 
 msgid "No"
 msgstr "Nein"
@@ -6060,8 +6119,8 @@ msgstr "Andere"
 msgid "Output"
 msgstr "Ausgang"
 
-msgid "Overwrite configuration files?"
-msgstr "Ausgabe"
+msgid "Overwrite configuration files ?"
+msgstr "Überschreibe Konfigurationsdateien ?"
 
 msgid "Overwrite configuration files during software upgrade?"
 msgstr "Konfigurationsdateien beim Software-Update überschreiben ?"
@@ -6102,6 +6161,9 @@ msgid "Packet management"
 msgstr "Paketverwaltung"
 
 msgid "Packet Manager"
+msgstr "Paketverwaltung"
+
+msgid "Packet manager"
 msgstr "Paketverwaltung"
 
 msgid "PacketManager"
@@ -6230,6 +6292,12 @@ msgstr "Bild in Grafik"
 
 msgid "Picture player"
 msgstr "Bildbetrachter"
+
+msgid "Show in main menu"
+msgstr "Zeige im Hauptmenü"
+
+msgid "Menu button for configuration"
+msgstr "Menütaste für Konfiguration"
 
 #. TRANSLATORS: (aspect ratio policy: black bars on left/right) in doubt, keep english term.
 msgid "Pillarbox"
@@ -6523,6 +6591,9 @@ msgstr "Portugiesisch"
 
 msgid "Position Setup"
 msgstr "Rotor Einstellungen"
+
+msgid "Positions Setup"
+msgstr "Oberflächen Einstellungen"
 
 msgid "Position of finished Timers in Timerlist"
 msgstr "Position beendeter Timer in der Timerliste"
@@ -7006,9 +7077,6 @@ msgstr "Fernbedienungstyp"
 msgid "Remove"
 msgstr "Entfernen"
 
-msgid "Remove Confirmation"
-msgstr "Bestätige Löschvorgang"
-
 msgid "Remove Service"
 msgstr "Service löschen"
 
@@ -7216,7 +7284,7 @@ msgid "Round start time on"
 msgstr "Runde Startzeit auf"
 
 msgid "Run how often ?"
-msgstr "Wie oft laufen lassen?"
+msgstr "Wie oft ausführen?"
 
 msgid "Running"
 msgstr "läuft"
@@ -7881,6 +7949,12 @@ msgstr "Schärfe"
 
 msgid "Short filenames"
 msgstr "Kurze Dateinamen"
+
+msgid "Very short filenames"
+msgstr "Sehr kurze Dateinamen"
+
+msgid "Very very short filenames"
+msgstr "Sehr sehr kurze Dateinamen"
 
 msgid "Show /tmp/ecm.info"
 msgstr "Zeige /tmp/ecm.info"
@@ -10303,12 +10377,6 @@ msgstr "West"
 msgid "West limit set"
 msgstr "Westen Grenzwert setzen"
 
-msgid "What Day of month ?"
-msgstr "Welchen Tag des Monats?"
-
-msgid "What Day of week ?"
-msgstr "Welchen Tag der Woche?"
-
 msgid "What action is required on complettion of the timer? 'Auto' lets the box return to the state it had when the timer started. 'Do nothing', 'Go to standby' and 'Go to deep standby' do ecaxtly that."
 msgstr "Was soll am Ende des Timer geschehen? 'Auto' schickt die Box in den Zustand den sie hatte als der Timer startete. 'Nichts machen', 'In Bereitschaft gehen', 'Ausschalten' machen genau das was sie sagen."
 
@@ -10317,6 +10385,12 @@ msgstr "Was durchsuchen?"
 
 msgid "When enabled the PiP can be closed by the exit button."
 msgstr "Wenn aktiviert kann PiP mit der Exit Taste geschlossen werden."
+
+msgid "Remember last service in PiP"
+msgstr "Letzten Bild im Bild Service merken"
+
+msgid "Configure if and how long the latest service in the PiP will be remembered."
+msgstr "Konfigurieren Sie, ob und wie lange der aktuelle Bild in Bild Service in Erinnerung bleiben soll."
 
 msgid "When enabled the online checker will also check for experimental versions"
 msgstr "Wenn aktiviert werden auch experimentelle Updates gesucht."
@@ -10929,6 +11003,30 @@ msgstr "Zap-Fokus auf Hauptbild legen"
 
 msgid "Zap mode"
 msgstr "Umschalt Modus"
+
+msgid "Channel zap delay mode"
+msgstr "Umschaltverzögerung"
+
+msgid "Channel zap delay first button"
+msgstr "Verzögerung erster Tastendruck"
+
+msgid "Channel zap delay another button"
+msgstr "Verzögerung weiterer Tastendruck"
+
+msgid "Number of digits in channel number"
+msgstr "Anzahl der Stellen in der Kanalliste"
+
+msgid "Setup delay mode to zap to channels."
+msgstr "Einstellung der Umschaltverzögerung zwischen den Kanälen."
+
+msgid "User defined delay when you press the first button to zap to the channel."
+msgstr "Benutzerdefinierte Einstellung der Umschaltverzögerung beim Druck auf die erste Taste."
+
+msgid "User defined delay when you press another button to zap to the channel."
+msgstr "Benutzerdefinierte Einstellung der Umschaltverzögerung beim Druck auf die zweite Taste."
+
+msgid "This allows you to set the number of digits to 5, if you have more than 9999 channels."
+msgstr "Hier kann die Anzahl der Kanäle auf 5 stellig geändert werden, wenn mehr als 9999 Kanäle vorhhanden sind."
 
 msgid "Zap to channel (setup in menu)"
 msgstr "Zap zu Sender"
@@ -11842,7 +11940,7 @@ msgid "set as startup service from standby"
 msgstr "Als Startsender aus dem Standby festlegen"
 
 msgid "stop using as startup service from standby"
-msgstr "Nicht mehr als Startsender aus dem Standby benutzen"
+msgstr "Nicht mehr als Startsender aus Standby benutzen"
 
 msgid "setup PIN"
 msgstr "Einstellungen PIN"
@@ -12208,6 +12306,12 @@ msgstr "Überschreiben der Konfigurations Files ?"
 
 msgid "Overwrite Setting Files ?"
 msgstr "Settings-Dateien überschreiben ?"
+
+msgid "Save EPG Cache ?"
+msgstr "Speichere EPG Cache ?"
+
+msgid "Save epg cache before start the backup?"
+msgstr "Speichere EPG Cache vor dem Backup?"
 
 msgid "Overwrite Driver Files ?"
 msgstr "Treiber-Module überschreiben ?"
@@ -13040,3 +13144,9 @@ msgstr "Sollen jetzt die Einstellungen gesichert werden?"
 
 msgid "Backup your image now?"
 msgstr "Soll jetzt ein komplettes Backup vom Image erstellt werden?"
+
+msgid "Animations"
+msgstr "Animationen"
+
+msgid "Animation Speed"
+msgstr "Animations Geschwindigkeit"

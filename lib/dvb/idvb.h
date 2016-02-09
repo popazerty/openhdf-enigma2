@@ -67,7 +67,7 @@ struct eBouquet
 // the following five methods are implemented in db.cpp
 	RESULT flushChanges();
 	RESULT addService(const eServiceReference &, eServiceReference before=eServiceReference());
-	RESULT removeService(const eServiceReference &);
+	RESULT removeService(const eServiceReference &, bool renameBouquet=true);
 	RESULT moveService(const eServiceReference &, unsigned int);
 	RESULT setListName(const std::string &name);
 };
@@ -276,7 +276,7 @@ public:
 	{
 		cVPID, cMPEGAPID, cTPID, cPCRPID, cAC3PID,
 		cVTYPE, cACHANNEL, cAC3DELAY, cPCMDELAY,
-		cSUBTITLE, cAACHEAPID=12, cDDPPID, cAACAPID, cacheMax
+		cSUBTITLE, cAACHEAPID=12, cDDPPID, cacheMax
 	};
 
 	int getCacheEntry(cacheID);
@@ -299,10 +299,12 @@ public:
 		dxNoDVB=4,  // dont use PMT for this service ( use cached pids )
 		dxHoldName=8,
 		dxNewFound=64,
+		dxIsDedicated3D=128,
 	};
 
 	bool usePMT() const { return !(m_flags & dxNoDVB); }
 	bool isHidden() const { return m_flags & dxDontshow; }
+	bool isDedicated3D() const { return m_flags & dxIsDedicated3D; }
 
 	CAID_LIST m_ca;
 

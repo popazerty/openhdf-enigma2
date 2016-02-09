@@ -1485,7 +1485,7 @@ class ChannelSelectionBase(Screen):
 				for path in self.history:
 					if len(path) > 2 and path[1] == root:
 						prev = path[2]
-				if prev is not None:
+				if config.usage.servicelist_keep_service.value and prev is not None:
 					self.setCurrentSelection(prev)
 
 	def inBouquet(self):
@@ -2121,7 +2121,7 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 	def recallPrevService(self):
 		hlen = len(self.history)
 		currentPlayedRef = self.session.nav.getCurrentlyPlayingServiceOrGroup()
-		if hlen > 0 and self.history[self.history_pos][-1] != currentPlayedRef:
+		if hlen > 0 and currentPlayedRef and self.history[self.history_pos][-1] != currentPlayedRef:
 			self.addToHistory(currentPlayedRef)
 			hlen = len(self.history)
 		if hlen > 1:
@@ -2152,16 +2152,25 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 		self.close(None)
 
 	def zapBack(self):
-		if self.startServiceRef and self.session.nav.getCurrentlyPlayingServiceOrGroup() and self.session.nav.getCurrentlyPlayingServiceOrGroup() != self.startServiceRef:
+		currentPlayedRef = self.session.nav.getCurrentlyPlayingServiceOrGroup()
+		if self.startServiceRef and (currentPlayedRef is None or currentPlayedRef != self.startServiceRef):
 			self.setStartRoot(self.startRoot)
 			self.new_service_played = True
 			self.session.nav.playService(self.startServiceRef)
 			self.saveChannel(self.startServiceRef)
+		else:
+			self.restoreMode()
 		self.startServiceRef = None
 		self.startRoot = None
 		if self.dopipzap:
 			# This unfortunately won't work with subservices
 			self.setCurrentSelection(self.session.pip.getCurrentService())
+		else:
+			lastservice = eServiceReference(self.lastservice.value)
+			if lastservice.valid() and self.getCurrentSelection() == lastservice:
+				pass	# keep current selection
+			else:
+				self.setCurrentSelection(currentPlayedRef)
 
 	def setStartRoot(self, root):
 		if root:
@@ -2171,6 +2180,13 @@ class ChannelSelection(ChannelSelectionBase, ChannelSelectionEdit, ChannelSelect
 				self.setModeRadio()
 			self.revertMode = None
 			self.enterUserbouquet(root)
+
+	def restoreMode(self):
+		if self.revertMode == MODE_TV:
+			self.setModeTv()
+		elif self.revertMode == MODE_RADIO:
+			self.setModeRadio()
+		self.revertMode = None
 
 	def enterUserbouquet(self, root):
 		self.clearPath()

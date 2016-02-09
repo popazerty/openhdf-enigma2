@@ -286,7 +286,7 @@ int eStaticServiceDVBBouquetInformation::isPlayable(const eServiceReference &ref
 		}
 		if (cur)
 		{
-			return cur;
+			return !!cur;
 		}
 		/* fallback to stream (or pvr) service alternative */
 		if (streamable_service)
@@ -884,11 +884,11 @@ RESULT eDVBServiceList::addService(eServiceReference &ref, eServiceReference bef
 	return m_bouquet->addService(ref, before);
 }
 
-RESULT eDVBServiceList::removeService(eServiceReference &ref)
+RESULT eDVBServiceList::removeService(eServiceReference &ref, bool renameBouquet)
 {
 	if (!m_bouquet)
 		return -1;
-	return m_bouquet->removeService(ref);
+	return m_bouquet->removeService(ref, renameBouquet);
 }
 
 RESULT eDVBServiceList::moveService(eServiceReference &ref, int pos)
@@ -1956,7 +1956,8 @@ int eDVBServicePlay::getInfo(int w)
 			return aspect;
 		break;
 	}
-	case sIsCrypted: if (no_program_info) return -1; return program.isCrypted();
+	case sIsCrypted: if (no_program_info) return false; return program.isCrypted();
+	case sIsDedicated3D: if (m_dvb_service) return m_dvb_service->isDedicated3D(); return false;
 	case sVideoPID:
 		if (m_dvb_service)
 		{
@@ -1979,9 +1980,6 @@ int eDVBServicePlay::getInfo(int w)
 			if (apid != -1)
 				return apid;
 			apid = m_dvb_service->getCacheEntry(eDVBService::cAACHEAPID);
-			if (apid != -1)
-				return apid;
-			apid = m_dvb_service->getCacheEntry(eDVBService::cAACAPID);
 			if (apid != -1)
 				return apid;
 		}
@@ -2028,9 +2026,9 @@ std::string eDVBServicePlay::getInfoString(int w)
 	case sLiveStreamDemuxId:
 	{
 		eDVBServicePMTHandler &h = m_timeshift_active ? m_service_handler_timeshift : m_service_handler;
-		std::string demux;
-		demux += h.getDemuxID() + '0';
-		return demux;
+		std::stringstream demux;
+		demux << h.getDemuxID();
+		return demux.str();
 	}
 	default:
 		break;
@@ -2168,6 +2166,22 @@ int eDVBServicePlay::selectAudioStream(int i)
 
 	m_current_audio_pid = apid;
 
+	pts_t a_pts, v_pts;
+	a_pts = v_pts = 0;
+	m_decoder->getPTS(2, a_pts);
+	m_decoder->getPTS(1, v_pts);
+	eDebug("a: %lld   v: %lld  %lld",a_pts, v_pts, a_pts-v_pts);
+	bool radio_workaround = false;
+	if(v_pts && a_pts && (abs(a_pts-v_pts) > 2* 90000))
+		radio_workaround = true;
+
+	if(radio_workaround)
+		if (m_decoder->setAudioPID(-1, 0))
+		{
+			eDebug("set audio pid failed");
+			return -4;
+		}
+
 	if (m_decoder->setAudioPID(apid, apidtype))
 	{
 		eDebug("set audio pid failed");
@@ -2198,6 +2212,9 @@ int eDVBServicePlay::selectAudioStream(int i)
 		}
 	}
 
+	if(radio_workaround)
+		m_decoder->setSyncPCR(-1);
+
 			/* store new pid as default only when:
 				a.) we have an entry in the service db for the current service,
 				b.) we are not playing back something,
@@ -2211,14 +2228,12 @@ int eDVBServicePlay::selectAudioStream(int i)
 		|| ((m_dvb_service->getCacheEntry(eDVBService::cMPEGAPID) == -1)
 		&& (m_dvb_service->getCacheEntry(eDVBService::cAC3PID)== -1)
 		&& (m_dvb_service->getCacheEntry(eDVBService::cDDPPID)== -1)
-		&& (m_dvb_service->getCacheEntry(eDVBService::cAACHEAPID) == -1)
-		&& (m_dvb_service->getCacheEntry(eDVBService::cAACAPID) == -1))))
+		&& (m_dvb_service->getCacheEntry(eDVBService::cAACHEAPID) == -1))))
 	{
 		m_dvb_service->setCacheEntry(eDVBService::cMPEGAPID, apidtype == eDVBAudio::aMPEG ? apid : -1);
 		m_dvb_service->setCacheEntry(eDVBService::cAC3PID, apidtype == eDVBAudio::aAC3 ? apid : -1);
 		m_dvb_service->setCacheEntry(eDVBService::cDDPPID, apidtype == eDVBAudio::aDDP ? apid : -1);
 		m_dvb_service->setCacheEntry(eDVBService::cAACHEAPID, apidtype == eDVBAudio::aAACHE ? apid : -1);
-		m_dvb_service->setCacheEntry(eDVBService::cAACAPID, apidtype == eDVBAudio::aAAC ? apid : -1);
 	}
 
 	h.resetCachedProgram();
@@ -2776,7 +2791,7 @@ void eDVBServicePlay::updateDecoder(bool sendSeekableStateChanged)
 		eDebug("getting program info failed.");
 	else
 	{
-		eDebugNoNewLine("have %zd video stream(s)", program.videoStreams.size());
+		eDebugNoNewLineStart("have %zd video stream(s)", program.videoStreams.size());
 		if (!program.videoStreams.empty())
 		{
 			eDebugNoNewLine(" (");
@@ -2809,10 +2824,10 @@ void eDVBServicePlay::updateDecoder(bool sendSeekableStateChanged)
 			}
 			eDebugNoNewLine(")");
 		}
-		eDebugNoNewLine(", and the pcr pid is %04x", program.pcrPid);
 		pcrpid = program.pcrPid;
-		eDebug(", and the text pid is %04x", program.textPid);
+		eDebugNoNewLine(", and the pcr pid is %04x", pcrpid);
 		tpid = program.textPid;
+		eDebugNoNewLineEnd(", and the text pid is %04x", tpid);
 	}
 
 	m_have_video_pid = 0;
@@ -2874,12 +2889,12 @@ void eDVBServicePlay::updateDecoder(bool sendSeekableStateChanged)
 		m_decoder->setVideoPID(vpid, vpidtype);
 		m_have_video_pid = (vpid > 0 && vpid < 0x2000);
 
-		selectAudioStream();
-
-		if (!(m_is_pvr || m_is_stream || m_timeshift_active))
+		if (!(m_is_pvr || m_is_stream || m_timeshift_active || (pcrpid == 0x1FFF)))
 			m_decoder->setSyncPCR(pcrpid);
 		else
 			m_decoder->setSyncPCR(-1);
+
+		selectAudioStream();
 
 		if (m_decoder_index == 0)
 		{

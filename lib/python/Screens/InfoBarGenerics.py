@@ -613,8 +613,7 @@ class InfoBarShowHide(InfoBarScreenSaver):
 		self.lastResetAlpha = True
 		self.secondInfoBarScreen = ""
 		if isStandardInfoBar(self):
-			self.secondInfoBarScreen = self.session.instantiateDialog(SecondInfoBar)
-			self.secondInfoBarScreen.show()
+			self.SwitchSecondInfoBarScreen()
 		self.onLayoutFinish.append(self.__layoutFinished)
 
 	def __layoutFinished(self):
@@ -1008,15 +1007,20 @@ class NumberZap(Screen):
 			self["servicename"].setText(ServiceReference(self.service).getServiceName())
 
 	def keyNumberGlobal(self, number):
-		self.Timer.start(1000, True)
+		if config.usage.numzaptimeoutmode.value is not "off":
+			if config.usage.numzaptimeoutmode.value is "standard":
+				self.Timer.start(1000, True)
+			else:
+				self.Timer.start(config.usage.numzaptimeout2.value, True)
 		self.numberString += str(number)
 		self["number"].setText(self.numberString)
 		self["number_summary"].setText(self.numberString)
 		self.field = self.numberString
 
 		self.handleServiceName()
+		self["service_summary"].setText(self["servicename"].getText())
 
-		if len(self.numberString) >= 4:
+		if len(self.numberString) >= int(config.usage.maxchannelnumlen.value):
 			self.keyOK()
 
 	def __init__(self, session, number, searchNumberFunction = None):
@@ -1033,8 +1037,10 @@ class NumberZap(Screen):
 		self["number"] = Label(self.numberString)
 		self["number_summary"] = StaticText(self.numberString)
 		self["servicename"] = Label()
+		self["service_summary"] = StaticText("")
 
 		self.handleServiceName()
+		self["service_summary"].setText(self["servicename"].getText())
 
 		self["actions"] = NumberActionMap( [ "SetupActions", "ShortcutActions" ],
 			{
@@ -1055,7 +1061,11 @@ class NumberZap(Screen):
 
 		self.Timer = eTimer()
 		self.Timer.callback.append(self.keyOK)
-		self.Timer.start(3000, True)
+		if config.usage.numzaptimeoutmode.value is not "off":
+			if config.usage.numzaptimeoutmode.value is "standard":
+				self.Timer.start(3000, True)
+			else:
+				self.Timer.start(config.usage.numzaptimeout1.value, True)
 
 class InfoBarNumberZap:
 	""" Handles an initial number for NumberZapping """
@@ -1419,6 +1429,7 @@ class InfoBarChannelSelection:
 			if self.pts_blockZap_timer.isActive():
 				return
 
+			self["SeekActionsPTS"].setEnabled(False)
 			if self.servicelist.inBouquet():
 				prev = self.servicelist.getCurrentSelection()
 				if prev:
@@ -1439,10 +1450,10 @@ class InfoBarChannelSelection:
 			else:
 				self.servicelist.moveUp()
 			self.servicelist.zap(enable_pipzap = True)
-
 		elif self.LongButtonPressed:
-			#if not hasattr(self.session, 'pip') and not self.session.pipshown:
-			return
+			if not hasattr(self.session, 'pip') and not self.session.pipshown:
+				self.session.open(MessageBox, _("Please open Picture in Picture first"), MessageBox.TYPE_ERROR)
+				return
 
 			from Screens.ChannelSelection import ChannelSelection
 			ChannelSelectionInstance = ChannelSelection.instance
@@ -1468,12 +1479,15 @@ class InfoBarChannelSelection:
 				self.servicelist2.moveUp()
 			self.servicelist2.zap(enable_pipzap = True)
 			ChannelSelectionInstance.dopipzap = False
+		if self.timeshiftEnabled() and self.isSeekable():
+			self["SeekActionsPTS"].setEnabled(True)
 
 	def zapUp(self):
 		if not self.LongButtonPressed or SystemInfo.get("NumVideoDecoders", 1) <= 1:
 			if self.pts_blockZap_timer.isActive():
 				return
 
+			self["SeekActionsPTS"].setEnabled(False)
 			if self.servicelist.inBouquet():
 				prev = self.servicelist.getCurrentSelection()
 				if prev:
@@ -1495,8 +1509,9 @@ class InfoBarChannelSelection:
 				self.servicelist.moveDown()
 			self.servicelist.zap(enable_pipzap = True)
 		elif self.LongButtonPressed:
-			#if not hasattr(self.session, 'pip') and not self.session.pipshown:
-			return
+			if not hasattr(self.session, 'pip') and not self.session.pipshown:
+				self.session.open(MessageBox, _("Please open Picture in Picture first"), MessageBox.TYPE_ERROR)
+				return
 
 			from Screens.ChannelSelection import ChannelSelection
 			ChannelSelectionInstance = ChannelSelection.instance
@@ -1522,7 +1537,8 @@ class InfoBarChannelSelection:
 				self.servicelist2.moveDown()
 			self.servicelist2.zap(enable_pipzap = True)
 			ChannelSelectionInstance.dopipzap = False
-
+		if self.timeshiftEnabled() and self.isSeekable():
+			self["SeekActionsPTS"].setEnabled(True)
 
 class InfoBarMenu:
 	""" Handles a menu action, to open the (main) menu """
@@ -3393,15 +3409,20 @@ class Seekbar(Screen):
 			self.percent = 100.0
 
 	def keyNumberGlobal(self, number):
-		self.Timer.start(1000, True)
+		if config.usage.numzaptimeoutmode.value is not "off":
+			if config.usage.numzaptimeoutmode.value is "standard":
+				self.Timer.start(1000, True)
+			else:
+				self.Timer.start(config.usage.numzaptimeout2.value, True)
 		self.numberString += str(number)
 		self["number"].setText(self.numberString)
 		self["number_summary"].setText(self.numberString)
 		self.field = self.numberString
 
 		self.handleServiceName()
+		self["service_summary"].setText(self["servicename"].getText())
 
-		if len(self.numberString) >= 4:
+		if len(self.numberString) >= int(config.usage.maxchannelnumlen.value):
 			self.keyOK()
 
 class InfoBarSeek:
@@ -4482,8 +4503,8 @@ class InfoBarPiP:
 				self.addExtension((self.getShowHideName, self.showPiP, self.pipShown), "blue")
 				self.addExtension((self.getMoveName, self.movePiP, self.pipShown), "green")
 
-		self.lastPiPServiceTimeout = eTimer()
-		self.lastPiPServiceTimeout.callback.append(self.clearLastPiPService)
+		self.lastPiPServiceTimeoutTimer = eTimer()
+		self.lastPiPServiceTimeoutTimer.callback.append(self.clearLastPiPService)
 
 	def pipShown(self):
 		return self.session.pipshown
@@ -4521,13 +4542,17 @@ class InfoBarPiP:
 				self.session.pip.servicePath = currentServicePath
 
 	def showPiP(self):
+		self.lastPiPServiceTimeoutTimer.stop()
+		slist = self.servicelist
 		if self.session.pipshown:
-			slist = self.servicelist
 			if slist and slist.dopipzap:
 				self.togglePipzap()
 			if self.session.pipshown:
-				self.lastPiPService = self.session.pip.getCurrentServiceReference()
-				self.lastPiPServiceTimeout.startLongTimer(60)
+				lastPiPServiceTimeout = int(config.usage.pip_last_service_timeout.value)
+				if lastPiPServiceTimeout >= 0:
+					self.lastPiPService = self.session.pip.getCurrentServiceReference()
+					if lastPiPServiceTimeout:
+						self.lastPiPServiceTimeoutTimer.startLongTimer(lastPiPServiceTimeout)
 				del self.session.pip
 				if SystemInfo["LCDMiniTV"]:
 					if config.lcd.modepip.value >= "1":

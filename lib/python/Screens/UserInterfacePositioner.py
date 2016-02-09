@@ -65,10 +65,21 @@ def InitOsd():
 
 	def set3DMode(configElement):
 		if SystemInfo["CanChange3DOsd"]:
-			print 'Setting 3D mode:',configElement.value
+			value = configElement.value
+			print 'Setting 3D mode:',value
 			try:
+				f = open("/proc/stb/fb/3dmode_choices", "r")
+				choices = f.readlines()[0].split()
+				f.close()
+				if value not in choices:
+					if value == "sidebyside":
+						value = "sbs"
+					elif value == "topandbottom":
+						value = "tab"
+					elif value == "auto":
+						value = "off"
 				f = open("/proc/stb/fb/3dmode", "w")
-				f.write(configElement.value)
+				f.write(value)
 				f.close()
 			except:
 				pass
@@ -229,7 +240,7 @@ class UserInterfacePositioner2(Screen, ConfigListScreen):
 			</screen>"""
 	def __init__(self, session):
 		Screen.__init__(self, session)
-		self.setup_title = _("Position Setup")
+		self.setup_title = _("Positions Setup")
 #		self.Console = Console()
 		self["status"] = StaticText()
 		self["key_red"] = StaticText(_("Cancel"))
@@ -368,7 +379,7 @@ class UserInterfacePositioner2(Screen, ConfigListScreen):
 class UserInterfacePositioner(Screen, ConfigListScreen):
 	def __init__(self, session):
 		Screen.__init__(self, session)
-		self.setup_title = _("Position Setup")
+		self.setup_title = _("Positions Setup")
 #		self.Console = Console()
 		self["status"] = StaticText()
 		self["key_red"] = StaticText(_("Cancel"))

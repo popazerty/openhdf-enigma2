@@ -82,9 +82,9 @@ def skin_user_skinname():
 
 # example: loadSkin("nemesis_greenline/skin.xml")
 config.skin = ConfigSubsection()
-DEFAULT_SKIN = "Nobile.HDF.Mod/skin.xml"
+DEFAULT_SKIN = "XionHDF/skin.xml"
 if not fileExists(resolveFilename(SCOPE_SKIN, DEFAULT_SKIN)):
-	DEFAULT_SKIN = "army.HDF.Mod/skin.xml"
+	DEFAULT_SKIN = "Nobile.HDF.Mod/skin.xml"
 config.skin.primary_skin = ConfigText(default=DEFAULT_SKIN)
 
 DEFAULT_DISPLAY_SKIN = "skin_display.xml"
@@ -107,7 +107,7 @@ addSkin('skin_box.xml')
 addSkin('skin_second_infobar.xml')
 
 # Only one of these is present, compliments of AM_CONDITIONAL
-if getBoxType() in ('vuultimo', 'vuduo2', 'twinboxlcd', 'gbquad', 'gbquadplus', 'gbultraue', 'gb800ue', 'gb800ueplus', 'gb800ue', 'gb800ueplus', 'xpeedlx3', 'et10000', 'et8500', 'et9x00'):
+if getBoxType() in ('vuultimo', 'vuduo2', 'twinboxlcd', 'gbquad', 'gbquadplus', 'gbultraue', 'gb800ue', 'gb800ueplus', 'gb800ue', 'gb800ueplus', 'xpeedlx3', 'atemionemesis', 'et10000', 'et8500', 'et9x00'):
 	config.skin.display_skin = ConfigText(default = "skin_display.xml")
 
 if getBoxType() == "inihde":
