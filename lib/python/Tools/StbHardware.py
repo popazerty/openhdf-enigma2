@@ -10,7 +10,7 @@ def getFPVersion():
 			file = open("/proc/stb/info/micomver", "r")
 			ret = file.readline().strip()
 			file.close()
-		elif getBoxType() in ('dm7080','dm820'):
+		elif getBoxType() in ('dm7080','dm820','dm520','dm525','dm900'):
 			ret = open("/proc/stb/fp/version", "r").read()
 		else:
 			ret = long(open("/proc/stb/fp/version", "r").read())
@@ -70,8 +70,8 @@ def setRTCtime(wutime):
 def getFPWakeuptime():
 	ret = 0
 	try:
-		f = long(open("/proc/stb/fp/wakeup_time", "r"))
-		ret = f.read()
+		f = open("/proc/stb/fp/wakeup_time", "r")
+		ret = long(f.read())
 		f.close()
 	except IOError:
 		try:
@@ -84,9 +84,12 @@ def getFPWakeuptime():
 
 wasTimerWakeup = None
 
-def getFPWasTimerWakeup():
+def getFPWasTimerWakeup(check = False):
 	global wasTimerWakeup
+	isError = False
 	if wasTimerWakeup is not None:
+		if check:
+			return wasTimerWakeup, isError
 		return wasTimerWakeup
 	wasTimerWakeup = False
 	try:
@@ -104,10 +107,13 @@ def getFPWasTimerWakeup():
 			fp.close()
 		except IOError:
 			print "wasTimerWakeup failed!"
+			isError = True
 
 	if wasTimerWakeup:
 		# clear hardware status
 		clearFPWasTimerWakeup()
+	if check:
+		return wasTimerWakeup, isError
 	return wasTimerWakeup
 
 def clearFPWasTimerWakeup():

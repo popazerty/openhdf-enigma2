@@ -83,6 +83,14 @@ class ServiceInfo(Converter, object):
 			return info.getInfoString(what)
 		return convert(v)
 
+	def getServiceInfoHexString(self, info, what, convert = lambda x: "%04x" % x):
+		v = info.getInfo(what)
+		if v == -1:
+			return "N/A"
+		if v == -2:
+			return info.getInfoString(what)
+		return convert(v)    
+
 	@cached
 	def getBoolean(self):
 		service = self.source.service
@@ -112,7 +120,7 @@ class ServiceInfo(Converter, object):
 				while idx < n:
 					i = audio.getTrackInfo(idx)
 					description = i.getDescription()
-					if description in ("AC3", "AC-3", "DTS"):
+					if description in ("AC3", "AC-3", "AC3+", "DTS"):
 						if self.type == self.IS_MULTICHANNEL:
 							return True
 						elif self.type == self.AUDIO_STEREO:
@@ -131,12 +139,12 @@ class ServiceInfo(Converter, object):
 			return video_aspect not in WIDESCREEN
 		elif self.type == self.SUBSERVICES_AVAILABLE:
 			subservices = service.subServices()
-			return subservices and subservices.getNumberOfSubservices() > 0
+			return bool(subservices) and subservices.getNumberOfSubservices() > 0
 		elif self.type == self.HAS_HBBTV:
 			return info.getInfoString(iServiceInformation.sHBBTVUrl) != ""
 		elif self.type == self.AUDIOTRACKS_AVAILABLE:
 			audio = service.audioTracks()
-			return audio and audio.getNumberOfTracks() > 1
+			return bool(audio) and audio.getNumberOfTracks() > 1
 		elif self.type == self.SUBTITLES_AVAILABLE:
 			subtitle = service and service.subtitle()
 			subtitlelist = subtitle and subtitle.getSubtitleList()
@@ -205,7 +213,7 @@ class ServiceInfo(Converter, object):
 		elif self.type == self.ONID:
 			return self.getServiceInfoString(info, iServiceInformation.sONID)
 		elif self.type == self.SID:
-			return self.getServiceInfoString(info, iServiceInformation.sSID)
+			return self.getServiceInfoHexString(info, iServiceInformation.sSID)
 		elif self.type == self.FRAMERATE:
 			return self.getServiceInfoString(info, iServiceInformation.sFrameRate, lambda x: "%d fps" % ((x+500)/1000))
 		elif self.type == self.TRANSFERBPS:
@@ -236,4 +244,4 @@ class ServiceInfo(Converter, object):
 
 	def changed(self, what):
 		if what[0] != self.CHANGED_SPECIFIC or what[1] in self.interesting_events:
-			Converter.changed(self, what)
+			Converter.changed(self, what) 

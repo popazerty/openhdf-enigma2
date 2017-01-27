@@ -6,6 +6,7 @@
 #include <dvbsi++/satellite_delivery_system_descriptor.h>
 #include <dvbsi++/cable_delivery_system_descriptor.h>
 #include <dvbsi++/terrestrial_delivery_system_descriptor.h>
+#include <dvbsi++/t2_delivery_system_descriptor.h>
 
 #include <lib/python/swig.h>
 #include <lib/dvb/idvb.h>
@@ -38,7 +39,7 @@ struct eDVBFrontendParametersSatellite
 	};
 
 	enum {
-		Modulation_Auto, Modulation_QPSK, Modulation_8PSK, Modulation_QAM16
+		Modulation_Auto, Modulation_QPSK, Modulation_8PSK, Modulation_QAM16, Modulation_16APSK, Modulation_32APSK
 	};
 
 	// dvb-s2
@@ -51,7 +52,7 @@ struct eDVBFrontendParametersSatellite
 	};
 
 	bool no_rotor_command_on_tune;
-	unsigned int frequency, symbol_rate;
+	int frequency, symbol_rate;
 	int polarisation, fec, inversion, orbital_position, system, modulation, rolloff, pilot;
 };
 SWIG_ALLOW_OUTPUT_SIMPLE(eDVBFrontendParametersSatellite);
@@ -81,7 +82,7 @@ struct eDVBFrontendParametersCable
 		Modulation_Auto, Modulation_QAM16, Modulation_QAM32, Modulation_QAM64, Modulation_QAM128, Modulation_QAM256
 	};
 
-	unsigned int frequency, symbol_rate;
+	int frequency, symbol_rate;
 	int modulation, inversion, fec_inner, system;
 };
 SWIG_ALLOW_OUTPUT_SIMPLE(eDVBFrontendParametersCable);
@@ -90,6 +91,7 @@ struct eDVBFrontendParametersTerrestrial
 {
 #ifndef SWIG
 	void set(const TerrestrialDeliverySystemDescriptor  &);
+	void set(const T2DeliverySystemDescriptor &);
 #endif
 	enum {
 		Bandwidth_8MHz, Bandwidth_7MHz, Bandwidth_6MHz, Bandwidth_Auto, Bandwidth_5MHz, Bandwidth_1_712MHz, Bandwidth_10MHz
@@ -128,7 +130,7 @@ struct eDVBFrontendParametersTerrestrial
 		Inversion_Off, Inversion_On, Inversion_Unknown
 	};
 
-	unsigned int frequency;
+	int frequency;
 	int bandwidth;
 	int code_rate_HP, code_rate_LP;
 	int modulation;
@@ -155,7 +157,7 @@ struct eDVBFrontendParametersATSC
 		Modulation_Auto, Modulation_QAM16, Modulation_QAM32, Modulation_QAM64, Modulation_QAM128, Modulation_QAM256, Modulation_VSB_8, Modulation_VSB_16
 	};
 
-	unsigned int frequency;
+	int frequency;
 	int modulation, inversion, system;
 };
 SWIG_ALLOW_OUTPUT_SIMPLE(eDVBFrontendParametersATSC);
@@ -194,8 +196,8 @@ public:
 	eDVBTransponderData(struct dtv_property *dtvproperties, unsigned int propertycount, bool original);
 
 	int getInversion() const;
-	unsigned int getFrequency() const;
-	unsigned int getSymbolRate() const;
+	int getFrequency() const;
+	int getSymbolRate() const;
 	int getOrbitalPosition() const;
 	int getFecInner() const;
 	int getModulation() const;
@@ -226,8 +228,8 @@ public:
 
 	std::string getTunerType() const;
 	int getInversion() const;
-	unsigned int getFrequency() const;
-	unsigned int getSymbolRate() const;
+	int getFrequency() const;
+	int getSymbolRate() const;
 	int getOrbitalPosition() const;
 	int getFecInner() const;
 	int getModulation() const;
@@ -248,8 +250,8 @@ public:
 
 	std::string getTunerType() const;
 	int getInversion() const;
-	unsigned int getFrequency() const;
-	unsigned int getSymbolRate() const;
+	int getFrequency() const;
+	int getSymbolRate() const;
 	int getFecInner() const;
 	int getModulation() const;
 	int getSystem() const;
@@ -266,7 +268,7 @@ public:
 
 	std::string getTunerType() const;
 	int getInversion() const;
-	unsigned int getFrequency() const;
+	int getFrequency() const;
 	int getBandwidth() const;
 	int getCodeRateLp() const;
 	int getCodeRateHp() const;
@@ -289,7 +291,7 @@ public:
 
 	std::string getTunerType() const;
 	int getInversion() const;
-	unsigned int getFrequency() const;
+	int getFrequency() const;
 	int getModulation() const;
 	int getSystem() const;
 };

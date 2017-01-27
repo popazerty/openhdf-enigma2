@@ -300,11 +300,13 @@ public:
 		dxHoldName=8,
 		dxNewFound=64,
 		dxIsDedicated3D=128,
+		dxHideVBI=512,
 	};
 
 	bool usePMT() const { return !(m_flags & dxNoDVB); }
 	bool isHidden() const { return m_flags & dxDontshow; }
 	bool isDedicated3D() const { return m_flags & dxIsDedicated3D; }
+	bool doHideVBI() const { return m_flags & dxHideVBI; }
 
 	CAID_LIST m_ca;
 
@@ -405,8 +407,10 @@ class eDVBFrontendParametersATSC;
 class iDVBFrontendParameters: public iObject
 {
 #ifdef SWIG
+public:
 	iDVBFrontendParameters();
 	~iDVBFrontendParameters();
+private:
 #endif
 public:
 	enum { flagOnlyFree = 1 };
@@ -474,8 +478,8 @@ class iDVBTransponderData: public iObject
 public:
 	virtual std::string getTunerType() const = 0;
 	virtual int getInversion() const = 0;
-	virtual unsigned int getFrequency() const = 0;
-	virtual unsigned int getSymbolRate() const = 0;
+	virtual int getFrequency() const = 0;
+	virtual int getSymbolRate() const = 0;
 	virtual int getOrbitalPosition() const = 0;
 	virtual int getFecInner() const = 0;
 	virtual int getModulation() const = 0;
@@ -517,12 +521,14 @@ public:
 #ifndef SWIG
 	virtual RESULT setSEC(iDVBSatelliteEquipmentControl *sec)=0;
 	virtual RESULT setSecSequence(eSecCommandList &list)=0;
+	virtual RESULT setSecSequence(eSecCommandList &list, iDVBFrontend *fe)=0;
 #endif
 	virtual int readFrontendData(int type)=0;
 	virtual void getFrontendStatus(ePtr<iDVBFrontendStatus> &dest)=0;
 	virtual void getTransponderData(ePtr<iDVBTransponderData> &dest, bool original)=0;
 	virtual void getFrontendData(ePtr<iDVBFrontendData> &dest)=0;
 #ifndef SWIG
+	virtual int getDVBID() = 0;
 	virtual RESULT getData(int num, long &data)=0;
 	virtual RESULT setData(int num, long val)=0;
 		/* 0 means: not compatible. other values are a priority. */

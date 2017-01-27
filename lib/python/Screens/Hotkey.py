@@ -15,7 +15,7 @@ from enigma import eServiceReference, eActionMap
 from Components.Label import Label
 import os
 
-updateversion = "02.01.2016"
+updateversion = "16.08.2016"
 
 def getHotkeys():
 	return [(_("OK long"), "okbutton_long", "Infobar/openInfoBarEPG"),
@@ -57,6 +57,8 @@ def getHotkeys():
 	(_("Context long"), "context_long", "Infobar/showExtensionSelection"),
 	(_("End"), "end", "Infobar/historyBack"),
 	(_("End long"), "end_long", ""),
+	(_("History"), "historyBack", ""),
+	(_("History long"), "historyBack_long", ""),
 	(_("Favorites"), "favor", "Infobar/openFavouritesList"),
 	(_("Favorites long"), "favor_long", "Infobar/openSatellites"),
 	(_("Fastforward"), "fastforward", ""),
@@ -115,8 +117,7 @@ def getHotkeys():
 	(_("Stop long"), "stop_long", "Infobar/stopTimeshift"),
 	(_("Subtitle"), "subtitle", "Infobar/subtitleSelection"),
 	(_("Subtitle long"), "subtitle_long", "Infobar/subserviceSelection"),
-	(_("Teletext"), "texter", "Infobar/startTeletext"),
-	(_("Teletext long"), "texter_long", ""),
+	(_("Teletext"), "text", "Infobar/startTeletext"),
 	(_("Timer"), "timer", "Module/Screens.TimerEdit/TimerEditList"),
 	(_("Timer long"), "timer_long", "Module/Screens.PowerTimerEdit/PowerTimerEditList"),
 	(_("Timeshift"), "timeshift", "Infobar/startTimeshift"),
@@ -189,6 +190,8 @@ def getHotkeyFunctions():
 	hotkeyFunctions.append((_("History back"), "Infobar/historyBack", "InfoBar"))
 	hotkeyFunctions.append((_("History next"), "Infobar/historyNext", "InfoBar"))
 	hotkeyFunctions.append((_("Show Audioselection"), "Infobar/audioSelection", "InfoBar"))
+	hotkeyFunctions.append((_("Enable digital downmix"), "Infobar/audioDownmixOn", "InfoBar"))
+	hotkeyFunctions.append((_("Disable digital downmix"), "Infobar/audioDownmixOff", "InfoBar"))
 	hotkeyFunctions.append((_("Switch to Radio Mode"), "Infobar/showRadio", "InfoBar"))
 	hotkeyFunctions.append((_("Switch to TV Mode"), "Infobar/showTv", "InfoBar"))
 	hotkeyFunctions.append((_("Show Favourites List"), "Infobar/openFavouritesList", "InfoBar"))
@@ -203,6 +206,7 @@ def getHotkeyFunctions():
 	hotkeyFunctions.append((_("Start Teletext"), "Infobar/startTeletext", "InfoBar"))
 	hotkeyFunctions.append((_("Show Subservice Selection"), "Infobar/subserviceSelection", "InfoBar"))
 	hotkeyFunctions.append((_("Show Subtitle Selection"), "Infobar/subtitleSelection", "InfoBar"))
+	hotkeyFunctions.append((_("Show subtitle quick menu"), "Infobar/subtitleQuickMenu", "InfoBar"))
 	hotkeyFunctions.append((_("Letterbox Zoom"), "Infobar/vmodeSelection", "InfoBar"))
 	hotkeyFunctions.append((_("ZoomInOut"), "InfobarGenerics/ZoomInOut", "InfoBar"))
 	hotkeyFunctions.append((_("ZoomOff"), "InfobarGenerics/ZoomInOut", "InfoBar"))
@@ -495,7 +499,7 @@ class HotkeySetupSelect(Screen):
 
 	def cancel(self):
 		if self.selected != self.prevselected:
-			self.session.openWithCallback(self.cancelCallback, MessageBox, _("are you sure to cancel all changes"), default=False)
+			self.session.openWithCallback(self.cancelCallback, MessageBox, _("Are you sure to cancel all changes?"), default=False)
 		else:
 			self.close()
 
